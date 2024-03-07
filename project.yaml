@@ -9,6 +9,7 @@ actions:
     run: >
       ehrql:v1
         generate-dataset analysis/dataset_definition_clinical_codes.py
+        --test-data-file analysis/test_dataset_definition_clinical_codes.py
         --dummy-tables dummy_tables
         --output output/datasets/code_counts_dataset.csv.gz
     outputs:
