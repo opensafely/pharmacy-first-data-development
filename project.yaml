@@ -5,8 +5,22 @@ expectations:
   population_size: 1000
 
 actions:
-  generate_dataset:
-    run: ehrql:v1 generate-dataset analysis/dataset_definition.py --output output/dataset.csv.gz
+  generate_dataset_codes:
+    run: >
+      ehrql:v1
+        generate-dataset analysis/dataset_definition_clinical_codes.py
+        --test-data-file analysis/test_dataset_definition_clinical_codes.py
+        --dummy-tables dummy_tables
+        --output output/datasets/code_counts_dataset.csv.gz
     outputs:
       highly_sensitive:
-        dataset: output/dataset.csv.gz
+        dataset: output/datasets/code_counts_dataset.csv.gz
+  
+  generate_measures_codes:
+    run: > 
+      ehrql:v1 generate-measures analysis/measures_definition_clinical_codes.py
+      --dummy-tables dummy_tables
+      --output output/clinical_codes/code_counts_measures.csv
+    outputs:
+      moderately_sensitive:
+        measure: output/clinical_codes/code_counts_measures.csv
