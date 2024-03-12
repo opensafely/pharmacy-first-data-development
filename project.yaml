@@ -24,3 +24,13 @@ actions:
     outputs:
       moderately_sensitive:
         measure: output/clinical_codes/code_counts_measures.csv
+
+  generate_dataset_curation:
+    run: >
+      ehrql:v1 generate-dataset analysis/dataset_definition_curation.py
+        --test-data-file analysis/test_dataset_definition_curation.py
+        --dummy-tables dummy_tables
+        --output output/data_curation/medications_data_curation.csv.gz
+    outputs:
+      highly_sensitive:
+        dataset: output/data_curation/medications_data_curation.csv.gz
