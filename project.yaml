@@ -30,3 +30,10 @@ actions:
     outputs:
       moderately_sensitive:
         dataset: output/data_curation/medication_status_counts.csv
+
+  data_curation_consultations:
+    run: r:latest analysis/data_curation_pharmacy_first_consultations.R
+    needs: [generate_dataset_curation]
+    outputs:
+      moderately_sensitive:
+        dataset: output/data_curation/consultations_counts.csv
