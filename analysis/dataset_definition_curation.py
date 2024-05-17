@@ -89,17 +89,19 @@ selected_medications_dict = {
 
 # Count distinct pharmacy first consultations per patient
 for time_interval_desc, selected_events in selected_events_dict.items():
-    count_distinct_consultations_query = selected_events.consultation_id.count_distinct_for_patient()
-    dataset.add_column(f"{time_interval_desc}_count_distinct_consultations", count_distinct_consultations_query)
+    count_distinct_consultations_query = (
+        selected_events.consultation_id.count_distinct_for_patient()
+    )
+    dataset.add_column(
+        f"{time_interval_desc}_count_distinct_consultations",
+        count_distinct_consultations_query,
+    )
 
-# Get first dmd_code linked to pharmacy first consultation
+# Get first medication status and dmd_code linked to pharmacy first consultation
 for time_interval_desc, selected_medications in selected_medications_dict.items():
     first_dmd_code_query = selected_medications.first_for_patient().dmd_code
-    dataset.add_column(f"{time_interval_desc}_first_dmd_code", first_dmd_code_query)
-
-# Get first medication status linked to pharmacy first consultation
-for time_interval_desc, selected_medications in selected_medications_dict.items():
     first_med_status_query = selected_medications.first_for_patient().medication_status
+    dataset.add_column(f"{time_interval_desc}_first_dmd_code", first_dmd_code_query)
     dataset.add_column(
         f"{time_interval_desc}_first_medication_status", first_med_status_query
     )
