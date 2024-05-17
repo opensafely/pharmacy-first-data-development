@@ -5,16 +5,15 @@ expectations:
   population_size: 1000
 
 actions:
-  generate_dataset_codes:
+  generate_dataset_curation:
     run: >
-      ehrql:v1
-        generate-dataset analysis/dataset_definition_clinical_codes.py
-        --test-data-file analysis/test_dataset_definition_clinical_codes.py
+      ehrql:v1 generate-dataset analysis/dataset_definition_curation.py
+        --test-data-file analysis/test_dataset_definition_curation.py
         --dummy-tables dummy_tables
-        --output output/datasets/code_counts_dataset.csv.gz
+        --output output/data_curation/data_curation.csv.gz
     outputs:
       highly_sensitive:
-        dataset: output/datasets/code_counts_dataset.csv.gz
+        dataset: output/data_curation/data_curation.csv.gz
   
   generate_measures_codes:
     run: > 
@@ -24,3 +23,17 @@ actions:
     outputs:
       moderately_sensitive:
         measure: output/clinical_codes/code_counts_measures.csv
+
+  data_curation_medications:
+    run: r:latest analysis/data_curation_medications_table.R
+    needs: [generate_dataset_curation]
+    outputs:
+      moderately_sensitive:
+        dataset: output/data_curation/medication_status_counts.csv
+
+  data_curation_consultations:
+    run: r:latest analysis/data_curation_pharmacy_first_consultations.R
+    needs: [generate_dataset_curation]
+    outputs:
+      moderately_sensitive:
+        dataset: output/data_curation/consultations_counts.csv
