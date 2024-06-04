@@ -26,14 +26,14 @@ test_data = {
                 # First before Pharmacy first launch
                 # consultation_id not linked to pharmacy first code in clinical_events
                 "consultation_id": 3,
-                "date": date(2024, 3, 1),
+                "date": date(2024, 1, 1),
                 "dmd_code": "39113611000001102",
                 "medication_status": 1,
             },
             {
                 # Last before Pharmacy first launch (same code)
                 "consultation_id": 1,
-                "date": date(2024, 1, 1),
+                "date": date(2024, 1, 2),
                 "dmd_code": "39113611000001107",
                 "medication_status": 1,
             },

@@ -4,14 +4,11 @@ library(magrittr)
 df_medications <- readr::read_csv(
   here::here("output", "data_curation", "data_curation.csv.gz"),
   col_types = list(
-    pre_first_dmd_code = "c",
-    post_first_dmd_code = "c",
     pre_first_medication_status = "c",
     post_first_medication_status = "c"
   )
 ) %>%
   dplyr::select(
-    pre_first_dmd_code, post_first_dmd_code,
     pre_first_medication_status, post_first_medication_status
   )
 
@@ -19,8 +16,6 @@ df_medications <- readr::read_csv(
 df_medications_tidy <- df_medications %>%
   tidyr::pivot_longer(
     cols = c(
-      "pre_first_dmd_code",
-      "post_first_dmd_code",
       "pre_first_medication_status",
       "post_first_medication_status"
     ),
