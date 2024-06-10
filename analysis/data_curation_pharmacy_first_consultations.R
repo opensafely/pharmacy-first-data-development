@@ -49,10 +49,12 @@ df_consultations_tidy <- df_consultations %>%
 
 df_consultations_summary <- df_consultations_tidy %>%
   dplyr::group_by(time, variable) %>%
-  dplyr::count() %>%
+  dplyr::mutate(count = sum(value, na.rm = TRUE)) %>%
   dplyr::arrange(variable, dplyr::desc(time)) %>%
-  dplyr::mutate(n = round(n, -1)) %>%
-  dplyr::filter(n >= 10)
+  dplyr::mutate(count = round(count, -1)) %>%
+  dplyr::filter(count >= 10) %>%
+  dplyr::select(time, variable, count) %>%
+  dplyr::distinct()
 
 # Write summary file
 readr::write_csv(
