@@ -157,7 +157,7 @@ selected_medications_any = (
 # Count all medication statuses
 for key, desc in med_status_dict.items():
     count_med_status_query = selected_medications_any.where(
-        selected_medications_any.medication_status.is_equal(key)
+        selected_medications_any.medication_status.is_in([key])
     ).count_for_patient()
     dataset.add_column(
         f"count_medication_status_{desc}_{key}", count_med_status_query
