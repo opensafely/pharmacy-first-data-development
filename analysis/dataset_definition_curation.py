@@ -19,6 +19,36 @@ pharmacy_first_dict = {
     "pharm_first_service": ["983341000000102"],
 }
 
+med_status_dict = {
+    "0": "Normal",
+    "4": "Historical",
+    "5": "Blue script",
+    "6": "Private",
+    "7": "Not in possession",
+    "8": "Repeat dispensed",
+    "9": "In possession",
+    "10": "Dental",
+    "11": "Hospital",
+    "12": "Problem substance",
+    "13": "From patient group direction",
+    "14": "To take out",
+    "15": "On admission",
+    "16": "Regular medication",
+    "17": "As required medication",
+    "18": "Variable dose medication",
+    "19": "Rate-controlled single regular",
+    "20": "Only once",
+    "21": "Outpatient",
+    "22": "Rate-controlled multiple regular",
+    "23": "Rate-controlled multiple only once",
+    "24": "Rate-controlled single only once",
+    "25": "Placeholder",
+    "26": "Unconfirmed",
+    "27": "Infusion",
+    "28": "Reducing dose blue script"
+    "": "N/A"
+}
+
 pharmacy_first_codes = [
     code for codelist in pharmacy_first_dict.values() for code in codelist
 ]
@@ -113,3 +143,22 @@ for code_desc, code in pharmacy_first_dict.items():
             selected_events.snomedct_code.is_in(code)
         ).count_for_patient()
         dataset.add_column(f"{time_interval_desc}_count_{code_desc}", count_codes_query)
+
+# Get all medications over 1 year
+selected_medications_any = (
+    medications.where(
+        medications.date.is_on_or_between(
+            "2023-05-31",
+            "2024-04-30",
+        )
+    )
+)
+
+# Count all medication statuses
+for key, desc in med_status_dict.items():
+    count_med_status_query = selected_medications_any.where(
+        selected_medications_any.medication_status.is_equal(key)
+    ).count_for_patient()
+    dataset.add_column(
+        f"count_medication_status_{desc}_{key}", count_med_status_query
+    )
