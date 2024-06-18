@@ -45,8 +45,8 @@ med_status_dict = {
     "25": "Placeholder",
     "26": "Unconfirmed",
     "27": "Infusion",
-    "28": "Reducing dose blue script",
-    "": "N/A"
+    "28": "Reducing dose blue script"
+    #"": "N/A"
 }
 
 pharmacy_first_codes = [
@@ -157,7 +157,7 @@ selected_medications_any = (
 # Count all medication statuses
 for key, desc in med_status_dict.items():
     count_med_status_query = selected_medications_any.where(
-        selected_medications_any.medication_status.is_in([key])
+        selected_medications_any.medication_status.is_in([int(key)])
     ).count_for_patient()
     dataset.add_column(
         f"count_medication_status_{desc}_{key}", count_med_status_query
