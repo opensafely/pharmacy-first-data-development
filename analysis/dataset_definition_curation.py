@@ -45,7 +45,7 @@ med_status_dict = {
     "25": "Placeholder",
     "26": "Unconfirmed",
     "27": "Infusion",
-    "28": "Reducing dose blue script"
+    "28": "Reducing dose blue script",
     "": "N/A"
 }
 
