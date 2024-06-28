@@ -82,6 +82,12 @@ selected_medications_post = (
     .sort_by(medications.date)
 )
 
+selected_medications_any_post = medications.where(
+    medications.date.is_on_or_between(
+        pharmacy_first_launch_date, pharmacy_first_launch_date + time_interval
+    )
+).sort_by(medications.date)
+
 selected_medications_dict = {
     "pre": selected_medications_pre,
     "post": selected_medications_post,
@@ -113,3 +119,10 @@ for code_desc, code in pharmacy_first_dict.items():
             selected_events.snomedct_code.is_in(code)
         ).count_for_patient()
         dataset.add_column(f"{time_interval_desc}_count_{code_desc}", count_codes_query)
+
+# Count all medication statuses
+for status in range(29):
+    count_med_status_query = selected_medications_any_post.where(
+        selected_medications_any_post.medication_status.is_in([status])
+    ).count_for_patient()
+    dataset.add_column(f"post_count_medication_status_{status}", count_med_status_query)
