@@ -2,7 +2,7 @@ library(magrittr)
 
 # Load data
 df_consultations <- readr::read_csv(
-  here::here("output", "data_curation", "data_curation.csv.gz"),
+  here::here("output", "data_development", "pf_codes_data_development.csv.gz"),
   col_types = list(
     pre_count_distinct_consultations = "i",
     post_count_distinct_consultations = "i",
@@ -28,6 +28,7 @@ df_consultations <- readr::read_csv(
   post_count_pharm_first_service
 )
 
+# Restructure data into 'long' format
 df_consultations_tidy <- df_consultations %>%
   tidyr::pivot_longer(
     cols = c(
@@ -47,17 +48,18 @@ df_consultations_tidy <- df_consultations %>%
   ) %>%
   dplyr::mutate(variable = stringr::str_sub(variable, 2, -1))
 
+# Calculate sum and apply statistical disclosure control
 df_consultations_summary <- df_consultations_tidy %>%
   dplyr::group_by(time, variable) %>%
   dplyr::mutate(count = sum(value, na.rm = TRUE)) %>%
   dplyr::arrange(variable, dplyr::desc(time)) %>%
+  dplyr::filter(count > 7) %>%
   dplyr::mutate(count = round(count, -1)) %>%
-  dplyr::filter(count >= 10) %>%
   dplyr::select(time, variable, count) %>%
   dplyr::distinct()
 
 # Write summary file
 readr::write_csv(
   df_consultations_summary,
-  here::here("output", "data_curation", "consultations_counts.csv")
+  here::here("output", "data_development", "pf_codes_counts.csv")
 )
