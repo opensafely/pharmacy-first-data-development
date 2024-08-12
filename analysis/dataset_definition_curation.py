@@ -4,6 +4,8 @@ from ehrql.tables.raw.tpp import medications
 
 from datetime import date
 
+from codelists import *
+
 dataset = create_dataset()
 dataset.define_population(patients.exists_for_patient())
 
@@ -22,6 +24,16 @@ pharmacy_first_events_dict = {
 pharmacy_first_event_codes = [
     code for codelist in pharmacy_first_events_dict.values() for code in codelist
 ]
+
+pharmacy_first_med_codes = (
+    acute_otitis_media_cod
+    + first_impetigo_treatment_cod
+    + infected_insect_bites_cod
+    + shingles_treatment_cod
+    + sinusitis_cod
+    + sore_throat_cod
+    + urinary_tract_infection_cod
+)
 
 # https://www.england.nhs.uk/primary-care/pharmacy/pharmacy-first/
 pharmacy_first_launch_date = date(2024, 1, 31)
@@ -68,6 +80,7 @@ selected_medications_pre = (
             pharmacy_first_launch_date - days(1),
         )
     )
+    .where(medications.dmd_code.is_in(pharmacy_first_med_codes))
     .where(medications.consultation_id.is_in(pharmacy_first_ids))
     .sort_by(medications.date)
 )
@@ -78,6 +91,7 @@ selected_medications_post = (
             pharmacy_first_launch_date, pharmacy_first_launch_date + time_interval
         )
     )
+    .where(medications.dmd_code.is_in(pharmacy_first_med_codes))
     .where(medications.consultation_id.is_in(pharmacy_first_ids))
     .sort_by(medications.date)
 )
