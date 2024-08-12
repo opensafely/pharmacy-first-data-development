@@ -8,7 +8,7 @@ dataset = create_dataset()
 dataset.define_population(patients.exists_for_patient())
 
 # Dictionary of pharmacy first codes
-pharmacy_first_dict = {
+pharmacy_first_events_dict = {
     # Community Pharmacy (CP) Blood Pressure (BP) Check Service (procedure)
     "comm_pharm_bp_service": ["1659111000000107"],
     # Community Pharmacy (CP) Contraception Service (procedure)
@@ -19,8 +19,8 @@ pharmacy_first_dict = {
     "pharm_first_service": ["983341000000102"],
 }
 
-pharmacy_first_codes = [
-    code for codelist in pharmacy_first_dict.values() for code in codelist
+pharmacy_first_event_codes = [
+    code for codelist in pharmacy_first_events_dict.values() for code in codelist
 ]
 
 # https://www.england.nhs.uk/primary-care/pharmacy/pharmacy-first/
@@ -30,7 +30,7 @@ pharmacy_first_launch_date = date(2024, 1, 31)
 time_interval = months(6)
 
 pharmacy_first_ids = clinical_events.where(
-    clinical_events.snomedct_code.is_in(pharmacy_first_codes)
+    clinical_events.snomedct_code.is_in(pharmacy_first_event_codes)
 ).consultation_id
 
 # Select clinical events
@@ -113,7 +113,7 @@ for time_interval_desc, selected_medications in selected_medications_dict.items(
     )
 
 # Count pharmacy first codes
-for code_desc, code in pharmacy_first_dict.items():
+for code_desc, code in pharmacy_first_events_dict.items():
     for time_interval_desc, selected_events in selected_events_dict.items():
         count_codes_query = selected_events.where(
             selected_events.snomedct_code.is_in(code)

@@ -4,7 +4,7 @@ from ehrql.tables.tpp import patients, clinical_events
 measures = create_measures()
 
 # Dictionary of pharmacy first codes
-pharmacy_first_codes = {
+pharmacy_first_event_codes = {
     # Community Pharmacy (CP) Blood Pressure (BP) Check Service (procedure)
     "blood_pressure_service": ["1659111000000107"],
     # Community Pharmacy (CP) Contraception Service (procedure)
@@ -22,7 +22,7 @@ selected_events = clinical_events.where(
 # Count pharmacy first codes
 pharmacy_first_code_counts = {}
 
-for code_desc, code in pharmacy_first_codes.items():
+for code_desc, code in pharmacy_first_event_codes.items():
     count_codes_query = selected_events.where(
         selected_events.snomedct_code.is_in(code)
     ).count_for_patient()
