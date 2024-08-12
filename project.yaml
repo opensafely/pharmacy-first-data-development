@@ -10,11 +10,20 @@ actions:
       ehrql:v1 generate-dataset analysis/dataset_definition_pf_data_development.py
         --test-data-file analysis/test_dataset_definition_pf_data_development.py
         --dummy-tables dummy_tables
-        --output output/data_curation/data_curation.csv.gz
+        --output output/data_development/pharmacy_first_data_development.csv.gz
     outputs:
       highly_sensitive:
-        dataset: output/data_curation/data_curation.csv.gz
-  
+        dataset: output/data_development/pharmacy_first_data_development.csv.gz
+
+  generate_med_status_data_development:
+    run: >
+      ehrql:v1 generate-dataset analysis/dataset_definition_med_status_data_development.py
+        --dummy-tables dummy_tables
+        --output output/data_development/med_status_data_development.csv.gz
+    outputs:
+      highly_sensitive:
+        dataset: output/data_development/med_status_data_development.csv.gz
+
   generate_measures_codes:
     run: > 
       ehrql:v1 generate-measures analysis/measures_definition_clinical_codes.py

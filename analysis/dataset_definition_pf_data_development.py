@@ -45,7 +45,7 @@ pharmacy_first_ids = clinical_events.where(
     clinical_events.snomedct_code.is_in(pharmacy_first_event_codes)
 ).consultation_id
 
-# Select clinical events
+# Select clinical events pre and post PF launch date
 selected_events_pre = (
     clinical_events.where(
         clinical_events.date.is_on_or_between(
@@ -72,7 +72,10 @@ selected_events_dict = {
     "post": selected_events_post,
 }
 
-# Select medications
+# Select medications pre and post PF launch date
+# This only selects medications that are:
+# (1) part of a PF codelist (pharmacy_first_med_codes)
+# (2) linked to a PF consultation (pharmacy_first_ids)
 selected_medications_pre = (
     medications.where(
         medications.date.is_on_or_between(
@@ -95,12 +98,6 @@ selected_medications_post = (
     .where(medications.consultation_id.is_in(pharmacy_first_ids))
     .sort_by(medications.date)
 )
-
-selected_medications_any_post = medications.where(
-    medications.date.is_on_or_between(
-        pharmacy_first_launch_date, pharmacy_first_launch_date + time_interval
-    )
-).sort_by(medications.date)
 
 selected_medications_dict = {
     "pre": selected_medications_pre,
@@ -133,10 +130,3 @@ for code_desc, code in pharmacy_first_events_dict.items():
             selected_events.snomedct_code.is_in(code)
         ).count_for_patient()
         dataset.add_column(f"{time_interval_desc}_count_{code_desc}", count_codes_query)
-
-# Count all medication statuses
-for status in range(29):
-    count_med_status_query = selected_medications_any_post.where(
-        selected_medications_any_post.medication_status.is_in([status])
-    ).count_for_patient()
-    dataset.add_column(f"post_count_medication_status_{status}", count_med_status_query)
