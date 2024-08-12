@@ -108,10 +108,10 @@ selected_medications_pfmed_pfid_post = (
 selected_medications_dict = {
     "pre_any": selected_medications_any_pre,
     "pre_pfmed": selected_medications_pfmed_pre,
-    "pre_pfmed_pfid": selected_medications_pfmed_pfid_pre,
+    "pre_pfmedid": selected_medications_pfmed_pfid_pre,
     "post_any": selected_medications_any_post,
     "post_pfmed": selected_medications_pfmed_post,
-    "post_pfmed_pfid": selected_medications_pfmed_pfid_post,
+    "post_pfmedid": selected_medications_pfmed_pfid_post,
 }
 
 # Count all medication status
@@ -121,4 +121,4 @@ for desc, selected_medications in selected_medications_dict.items():
         count_med_status_query = selected_medications.where(
             selected_medications.medication_status.is_in([status])
         ).count_for_patient()
-        dataset.add_column(f"{desc}_count_status_{status}", count_med_status_query)
+        dataset.add_column(f"{desc}_status{status}", count_med_status_query)
