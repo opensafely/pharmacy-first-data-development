@@ -29,7 +29,7 @@ for code_desc, code in pharmacy_first_codes.items():
     pharmacy_first_code_counts[f"count_{code_desc}"] = count_codes_query
 
 # Define intervals and measures
-intervals = months(16).starting_on("2023-01-31")
+intervals = months(18).starting_on("2023-01-31")
 
 for measures_name, code_counts in pharmacy_first_code_counts.items():
     measures.define_measure(

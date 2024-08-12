@@ -27,7 +27,7 @@ pharmacy_first_codes = [
 pharmacy_first_launch_date = date(2024, 1, 31)
 
 # Time interval for selecting medications pre and post Pharmacy First launch date
-time_interval = months(3)
+time_interval = months(6)
 
 pharmacy_first_ids = clinical_events.where(
     clinical_events.snomedct_code.is_in(pharmacy_first_codes)
