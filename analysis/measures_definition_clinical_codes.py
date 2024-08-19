@@ -1,5 +1,5 @@
 from ehrql import INTERVAL, create_measures, months
-from ehrql.tables.tpp import patients, clinical_events
+from ehrql.tables.tpp import clinical_events, patients, practice_registrations
 
 measures = create_measures()
 
@@ -15,6 +15,9 @@ pharmacy_first_event_codes = {
     "pharmacy_first_service": ["983341000000102"],
 }
 
+registration = practice_registrations.for_patient_on(INTERVAL.end_date)
+
+# Select clinical events
 selected_events = clinical_events.where(
     clinical_events.date.is_on_or_between(INTERVAL.start_date, INTERVAL.end_date)
 )
@@ -35,6 +38,9 @@ for measures_name, code_counts in pharmacy_first_code_counts.items():
     measures.define_measure(
         name=measures_name,
         numerator=code_counts,
+        group_by={
+            "practice_region": registration.practice_nuts1_region_name
+            },
         denominator=patients.exists_for_patient(),
         intervals=intervals,
     )
