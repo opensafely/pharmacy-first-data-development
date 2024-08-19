@@ -19,13 +19,13 @@ pharmacy_first_event_codes = [
 
 # Combine all medication codelists
 pharmacy_first_med_codes = (
-    acute_otitis_media_cod
-    + first_impetigo_treatment_cod
-    + infected_insect_bites_cod
-    + shingles_treatment_cod
-    + sinusitis_cod
-    + sore_throat_cod
-    + urinary_tract_infection_cod
+    acute_otitis_media_tx_cod
+    + impetigo_treatment_tx_cod
+    + infected_insect_bites_tx_cod
+    + shingles_treatment_tx_cod
+    + sinusitis_tx_cod
+    + sore_throat_tx_cod
+    + urinary_tract_infection_tx_cod
 )
 
 # https://www.england.nhs.uk/primary-care/pharmacy/pharmacy-first/
