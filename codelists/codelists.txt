@@ -5,3 +5,4 @@ opensafely/pharmacy-first-shingles-treatment-dmd/3bbcc6a2
 opensafely/pharmacy-first-sinusitis-treatment-dmd/0f036024
 opensafely/pharmacy-first-sore-throat-treatment-dmd/2ac5934f
 opensafely/pharmacy-first-urinary-tract-infection-treatment-dmd/54cc39d7
+user/chriswood/pharmacy-first-clinical-pathway-conditions/7ec97762

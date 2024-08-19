@@ -41,6 +41,12 @@
       "url": "https://www.opencodelists.org/codelist/opensafely/pharmacy-first-urinary-tract-infection-treatment-dmd/54cc39d7/",
       "downloaded_at": "2024-08-12 08:26:02.392613Z",
       "sha": "f7f6dcf4d7fc4d9b99d1a8644465f428c751b763"
+    },
+    "user-chriswood-pharmacy-first-clinical-pathway-conditions.csv": {
+      "id": "user/chriswood/pharmacy-first-clinical-pathway-conditions/7ec97762",
+      "url": "https://www.opencodelists.org/codelist/user/chriswood/pharmacy-first-clinical-pathway-conditions/7ec97762/",
+      "downloaded_at": "2024-08-19 15:58:58.072703Z",
+      "sha": "bed7f74add5c2d2ac6f7120d89f5ba94e57a28cb"
     }
   }
 }
