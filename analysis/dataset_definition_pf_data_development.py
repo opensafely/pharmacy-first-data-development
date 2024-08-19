@@ -36,6 +36,8 @@ pharmacy_first_med_codes = (
 )
 
 # https://www.england.nhs.uk/primary-care/pharmacy/pharmacy-first/
+# For further projects we should review if choosing the actual start date
+# will give us the most accurate cut-off in OpenSAFELY 
 pharmacy_first_launch_date = date(2024, 1, 31)
 
 # Time interval for selecting medications pre and post Pharmacy First launch date
