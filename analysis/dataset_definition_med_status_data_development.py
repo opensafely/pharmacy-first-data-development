@@ -38,6 +38,29 @@ pharmacy_first_ids = clinical_events.where(
     clinical_events.snomedct_code.is_in(pharmacy_first_event_codes)
 ).consultation_id
 
+# Select clinical events
+selected_events_pfid_pre = (
+    clinical_events.where(
+        clinical_events.date.is_on_or_between(
+            pharmacy_first_launch_date - time_interval,
+            pharmacy_first_launch_date - days(1),
+        )
+    )
+    .where(clinical_events.snomedct_code.is_in(pf_clinical_pathway_conditions_cod))
+    .where(clinical_events.consultation_id.is_in(pharmacy_first_ids))
+    .sort_by(clinical_events.date)
+)
+
+selected_events_pfid_post = (
+    clinical_events.where(
+        clinical_events.date.is_on_or_between(
+            pharmacy_first_launch_date, pharmacy_first_launch_date + time_interval
+        )
+    )
+    .where(clinical_events.snomedct_code.is_in(pf_clinical_pathway_conditions_cod))
+    .where(clinical_events.consultation_id.is_in(pharmacy_first_ids))
+    .sort_by(clinical_events.date)
+)
 
 # Select medications
 # Pre launch, any medication
@@ -114,6 +137,11 @@ selected_medications_dict = {
     "post_pfmedid": selected_medications_pfmed_pfid_post,
 }
 
+selected_events_dict = {
+    "pre_pfconditionpfid": selected_events_pfid_pre,
+    "post_pfconditionpfid": selected_events_pfid_pre,
+}
+
 # Count all medication status
 # This will add 6 x 28 = 168 new columns
 for desc, selected_medications in selected_medications_dict.items():
@@ -122,3 +150,10 @@ for desc, selected_medications in selected_medications_dict.items():
             selected_medications.medication_status.is_in([status])
         ).count_for_patient()
         dataset.add_column(f"{desc}_status{status}", count_med_status_query)
+
+# Count all PF clinical pathway conditions with PF id 
+for desc, selected_events in selected_events_dict.items():
+    count_events_query = selected_events.where(
+        selected_events.snomedct_code.is_in(pf_clinical_pathway_conditions_cod)
+    ).count_for_patient()
+    dataset.add_column(f"{desc}_count", count_events_query)
