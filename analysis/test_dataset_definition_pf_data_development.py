@@ -1,6 +1,8 @@
 from datetime import date
-from analysis.dataset_definition_curation import dataset
+from analysis.dataset_definition_pf_data_development import dataset
 
+# Run the following command in the terminal to test the dataset definition dataset_definition_pf_data_development
+# opensafely exec ehrql:v1 assure analysis/test_dataset_definition_pf_data_development.py
 test_data = {
     # Expected in population with matching medication
     1: {
@@ -27,28 +29,36 @@ test_data = {
                 # consultation_id not linked to pharmacy first code in clinical_events
                 "consultation_id": 3,
                 "date": date(2024, 1, 1),
-                "dmd_code": "39113611000001102",
-                "medication_status": 1,
+                "dmd_code": "20129711000001103",
+                "medication_status": 3,
             },
             {
                 # Last before Pharmacy first launch (same code)
                 "consultation_id": 1,
                 "date": date(2024, 1, 2),
-                "dmd_code": "39113611000001107",
+                "dmd_code": "37772611000001104",
                 "medication_status": 1,
             },
             {
                 # First after Pharmacy first launch
+                # But not a dmd code from the PF codelists
                 "consultation_id": 2,
                 "date": date(2024, 2, 1),
-                "dmd_code": "39113611000001107",
+                "dmd_code": "10010100",
+                "medication_status": 4,
+            },
+            {
+                # Second after Pharmacy first launch
+                "consultation_id": 2,
+                "date": date(2024, 2, 2),
+                "dmd_code": "78111000001109",
                 "medication_status": 3,
             },
         ],
         "expected_in_population": True,
         "expected_columns": {
-            "pre_first_dmd_code": "39113611000001107",
-            "post_first_dmd_code": "39113611000001107",
+            "pre_first_dmd_code": "37772611000001104",
+            "post_first_dmd_code": "78111000001109",
             "pre_first_medication_status": 1,
             "post_first_medication_status": 3,
         },
@@ -76,21 +86,21 @@ test_data = {
                 # First after Pharmacy first launch
                 "consultation_id": 1,
                 "date": date(2024, 3, 1),
-                "dmd_code": "39113611000001102",
+                "dmd_code": "21532411000001101",
                 "medication_status": 11,
             },
             {
                 # Second after Pharmacy first launch (different code)
                 "consultation_id": 1,
-                "date": date(2024, 3, 1),
-                "dmd_code": "39113611000001107",
+                "date": date(2024, 3, 2),
+                "dmd_code": "10381311000001104",
                 "medication_status": 12,
             },
         ],
         "expected_in_population": True,
         "expected_columns": {
             "pre_first_dmd_code": None,
-            "post_first_dmd_code": "39113611000001102",
+            "post_first_dmd_code": "21532411000001101",
             "pre_first_medication_status": None,
             "post_first_medication_status": 11,
         },
