@@ -29,7 +29,7 @@ pharmacy_first_med_codes = (
 )
 
 # https://www.england.nhs.uk/primary-care/pharmacy/pharmacy-first/
-pharmacy_first_launch_date = date(2024, 1, 31)
+pharmacy_first_launch_date = date(2024, 2, 1)
 
 # Time interval for selecting medications pre and post Pharmacy First launch date
 time_interval = months(6)
