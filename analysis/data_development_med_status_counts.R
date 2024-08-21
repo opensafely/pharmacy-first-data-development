@@ -4,7 +4,7 @@ library(magrittr)
 df_med_status <- readr::read_csv(
   here::here("output", "data_development", "med_status_data_development.csv.gz")
 ) %>%
-  dplyr::select(patient_id, dplyr::starts_with("pre_any"))
+  dplyr::select(patient_id, dplyr::starts_with("pre_"))
 
 print("Load data successfully")
 
