@@ -1,8 +1,8 @@
 library(magrittr)
-
+library(arrow)
 # Load data
-df_med_status <- readr::read_csv(
-  here::here("output", "data_development", "med_status_data_development.csv.gz")
+df_med_status <- arrow::read_feather(
+  here::here("output", "data_development", "med_status_data_development.arrow")
 ) %>%
   dplyr::select(patient_id, dplyr::starts_with("pre_"))
 

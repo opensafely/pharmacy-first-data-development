@@ -19,10 +19,10 @@ actions:
     run: >
       ehrql:v1 generate-dataset analysis/dataset_definition_med_status_data_development.py
         --dummy-tables dummy_tables
-        --output output/data_development/med_status_data_development.csv.gz
+        --output output/data_development/med_status_data_development.arrow
     outputs:
       highly_sensitive:
-        dataset: output/data_development/med_status_data_development.csv.gz
+        dataset: output/data_development/med_status_data_development.arrow
 
   generate_measures_pf_codes:
     run: > 
