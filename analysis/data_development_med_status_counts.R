@@ -17,15 +17,17 @@ selected_variables_list <- list(
 )
 
 # Check that all names defined in data_extractions are in df df_med_status
-all(unlist(selected_variables_list) %in% names(df_med_status))
+# all(unlist(selected_variables_list) %in% names(df_med_status))
 
 print("Define variable names successfully")
 
-dfs_med_status_long <- list()
+dfs_med_status_summary <- list()
 
 for (selected_variables in seq_along(selected_variables_list)) {
+
+  print(paste0("Run ", selected_variables, ":"))
   # Restructure data into 'long' format
-  dfs_med_status_long[[selected_variables]] <- df_med_status %>%
+  dfs_med_status_long_tmp <- df_med_status %>%
     dplyr::select(dplyr::all_of(selected_variables_list[[selected_variables]])) %>%
     tidyr::pivot_longer(
       cols = c(dplyr::all_of(selected_variables_list[[selected_variables]])),
@@ -33,14 +35,9 @@ for (selected_variables in seq_along(selected_variables_list)) {
       names_sep = "_"
     )
 
-  print(paste0("Pivot data successfully, run: ", selected_variables))
-}
+  print("- Pivot data successfully")
 
-dfs_med_status_summary <- list()
-
-for (df_med_status_long in seq_along(dfs_med_status_long)) {
-  # Calculate sum and apply statistical disclosure control
-  dfs_med_status_summary[[df_med_status_long]] <- dfs_med_status_long[[df_med_status_long]] %>%
+  dfs_med_status_summary[[selected_variables]] <- dfs_med_status_long_tmp %>%
     dplyr::group_by(time, selected_codes, med_status) %>%
     dplyr::mutate(n = sum(value, na.rm = TRUE)) %>%
     dplyr::ungroup() %>%
@@ -49,7 +46,9 @@ for (df_med_status_long in seq_along(dfs_med_status_long)) {
     dplyr::filter(n > 7) %>%
     dplyr::mutate(n = round(n, -1))
 
-  print(paste0("Calculate sums successfully, run: ", df_med_status_long))
+  rm(dfs_med_status_long_tmp)
+
+  print("- Calculate sums successfully")
 }
 
 # Combine all data frames
