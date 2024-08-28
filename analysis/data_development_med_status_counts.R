@@ -46,9 +46,11 @@ for (selected_variables in seq_along(selected_variables_list)) {
     dplyr::filter(n > 7) %>%
     dplyr::mutate(n = round(n, -1))
 
-  rm(dfs_med_status_long_tmp)
-
   print("- Calculate sums successfully")
+
+  # Free up memory
+  rm(dfs_med_status_long_tmp)
+  gc()
 }
 
 # Combine all data frames
