@@ -2,6 +2,7 @@ from ehrql import INTERVAL, create_measures, months
 from ehrql.tables.tpp import clinical_events, patients, practice_registrations
 
 measures = create_measures()
+measures.configure_dummy_data(population_size=10000)
 
 # Dictionary of pharmacy first codes
 pharmacy_first_event_codes = {
