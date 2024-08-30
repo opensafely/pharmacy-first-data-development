@@ -1,0 +1,136 @@
+---
+title: "Pharmacy First Data Development Report"
+output: html_document
+---
+
+This markdown report creates the tables and figures for the Pharmacy first data development project. 
+
+
+```{r setup, include=FALSE}
+
+# Load packages and function
+library(tidyverse)
+library(here)
+library(gt)
+```
+
+### Table with count for each medication status by selected medications and time period
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+
+# Read the CSV file
+df_med_status_counts <- read_csv(here("output/data_development/med_status_counts.csv"))
+
+# Process data frame
+med_status_counts <- df_med_status_counts %>%
+  pivot_wider(names_from = selected_codes, values_from = n) %>%
+  mutate(
+    med_status = gsub("status", "", as.character(med_status)),
+    med_status = as.numeric(med_status)
+  ) %>%
+  arrange(med_status) %>%
+  replace_na(list(any = 0, pfmed = 0, pfmedid = 0)) %>%
+  select(
+    "Medication status" = med_status,
+    "Time" = time,
+    "Any medication" = any,
+    "PF medication" = pfmed,
+    "PF medications linked to PF consultation" = pfmedid
+  )
+
+# Display data frame as table
+med_status_counts_table <- med_status_counts %>%
+    gt() %>%
+    tab_header(
+        title = "Count for each medication status by selected medications and time period"
+    ) %>%
+    fmt_number(
+        columns = c("Any medication",
+                    "PF medication",
+                    "PF medications linked to PF consultation"),
+        decimals = 0
+    ) %>%
+    cols_align(
+        align = "center",
+        columns = everything()
+    ) %>%
+    tab_style(
+        style = cell_borders(
+            sides = "left",
+            color = "#000000a6",
+            weight = px(1)
+        ),
+        locations = cells_body(
+            columns = everything()
+    )
+  )
+
+med_status_counts_table
+
+
+```
+
+### Table with the count for each PF consultation code by time period
+
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+
+# Read the CSV file
+df_pf_codes_counts <- read_csv(here("output/data_development/pf_codes_counts.csv"))
+
+# Process data frame
+pf_counts <- df_pf_codes_counts %>%
+    select(
+    "Time" = time,
+    "PF consultation code" = variable,
+    "Count" = count
+    ) %>%
+    group_by(Time)
+# Display data frame as table
+
+pf_counts_table <- pf_counts %>%
+    gt() %>%
+    tab_header(
+        title = "Count for each medication status by selected medications and time period"
+    ) %>%
+    fmt_number(
+        columns = Count,
+        decimals = 0
+    ) %>%
+    cols_align(
+        align = "center",
+        columns = everything()
+    )
+
+pf_counts_table
+```
+
+### Figure visualising the measures output code_counts_measures
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+
+# Read the CSV file
+df_codes_counts <- read_csv(here("output/clinical_codes/code_counts_measures.csv"))
+
+# Process data frame
+code_counts <- df_codes_counts %>%
+    replace_na(list(practice_region = "(Missing)"))
+
+plot_code_counts <- code_counts %>%
+    ggplot(aes(
+      x = interval_end,
+      y = ratio,
+      colour = practice_region,
+    )) + 
+    geom_point() + 
+    geom_line(alpha = .5) +
+    # Please add labels, not sure what to write!
+    labs(
+      title = NULL,
+      x = NULL,
+      y = NULL,
+      colour = "Practice region"
+    ) +
+    scale_y_continuous(
+      labels = scales::label_percent(),
+    )
+
+plot_code_counts
+```
