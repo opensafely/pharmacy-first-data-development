@@ -57,7 +57,7 @@ med_status_label_desc <- c(
   "27 - Infusion",
   "28 - Reducing dose blue script"
 )
-unique(df_codes_counts$measure)
+
 # Pharmacy first codes
 pf_consultation_label <- c(
   "count_blood_pressure_service",
@@ -74,11 +74,67 @@ pf_consultation_label_desc <- c(
 )
 ```
 
-## Pharmacy First medication status
+## Medication status
+
+### Overall medication status counts
+
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+df_tab_med_status_counts <- df_med_status_counts %>%
+  replace_na(list(n = 0)) %>%
+  filter(selected_codes == "any") %>%
+  group_by(med_status) %>%
+  mutate(
+    n = sum(n, na.rm = TRUE),
+    med_status = factor(
+      med_status,
+      levels = med_status_label,
+      labels = med_status_label_desc
+    )
+  ) %>%
+  select(-time, -selected_codes) %>%
+  distinct() %>%
+  ungroup()
+
+tab_med_status_counts <- df_tab_med_status_counts %>%
+  gt() %>%
+  sub_missing(
+    columns = everything(),
+    rows = everything(),
+    missing_text = "---"
+  ) %>%
+  fmt_number(
+    columns = n,
+    decimals = 0
+  ) %>%
+  cols_label(
+    med_status = "Medication status",
+    n = "Count"
+  ) %>%
+  cols_align(
+    align = "left",
+    columns = med_status
+  ) %>%
+  tab_footnote(
+    footnote = "Any medication.",
+    locations = cells_column_labels(columns = n)
+  ) %>%
+  tab_header(
+    title = md("**Count of medication status for any medication from 1st Aug 2023 to 31st Jul 2024**"),
+  )
+
+gtsave(
+  tab_med_status_counts,
+  here("reports", "resources", "tab_med_status_counts.png"),
+)
+
+tab_med_status_counts
+```
+
+### Pharmacy First medication status counts
 
 ```{r, message=FALSE, warning=FALSE, echo = FALSE}
 # Process data frame
-df_tab_med_status_counts <- df_med_status_counts %>%
+df_tab_pf_med_status_counts <- df_med_status_counts %>%
   replace_na(list(n = 0)) %>%
   pivot_wider(names_from = c(time, selected_codes), values_from = n) %>%
   mutate(
@@ -96,7 +152,7 @@ df_tab_med_status_counts <- df_med_status_counts %>%
   )
 
 # Display data frame as table
-tab_med_status_counts <- df_tab_med_status_counts %>%
+tab_pf_med_status_counts <- df_tab_pf_med_status_counts %>%
   gt() %>%
   sub_missing(
     columns = everything(),
@@ -148,15 +204,15 @@ tab_med_status_counts <- df_tab_med_status_counts %>%
     locations = cells_column_labels(columns = c(pre_pfmedid, post_pfmedid))
   ) %>%
   tab_header(
-    title = md("**Count of medication status before and after the Pharmacy First launch date (31 Jan 2024)**"),
+    title = md("**Count of medication status before and after the Pharmacy First launch date (31st Jan 2024)**"),
   )
 
 gtsave(
-  tab_med_status_counts,
+  tab_pf_med_status_counts,
   here("reports", "resources", "tab_med_status_counts.png"),
 )
 
-tab_med_status_counts
+tab_pf_med_status_counts
 ```
 
 ## Pharmacy First consultation codes
