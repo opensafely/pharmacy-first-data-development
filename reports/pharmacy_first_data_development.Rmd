@@ -151,16 +151,80 @@ tab_med_status_counts <- df_tab_med_status_counts %>%
     title = md("**Count of medication status before and after the Pharmacy First launch date (31 Jan 2024)**"),
   )
 
+gtsave(
+  tab_med_status_counts,
+  here("reports", "resources", "tab_med_status_counts.png"),
+)
+
 tab_med_status_counts
 ```
 
 ## Pharmacy First consultation codes
 
+```{r, fig.height=5, fig.width=8, echo = FALSE, warning=FALSE}
+# Read the CSV file
+
+plot_code_counts <- df_codes_counts %>%
+  group_by(measure, interval_end) %>%
+  mutate(
+    numerator_total = sum(numerator, na.rm = TRUE),
+    denominator_total = sum(denominator, na.rm = TRUE),
+    measure = factor(measure, levels = pf_consultation_label, labels = pf_consultation_label_desc),
+  ) %>%
+  select(measure, interval_end, numerator_total, denominator_total) %>%
+  distinct() %>%
+  ggplot(aes(
+    x = interval_end,
+    y = numerator_total,
+    colour = measure,
+    shape = measure,
+  )) +
+  geom_point(size = 2) +
+  geom_line(alpha = .3) +
+  labs(
+    title = NULL,
+    x = NULL,
+    y = "Total count",
+    colour = NULL,
+    shape = NULL
+  ) +
+  scale_y_continuous(
+    labels = scales::label_number(),
+  ) +
+  theme(legend.position = "bottom") +
+  guides(
+    colour = guide_legend(ncol = 2),
+    shape = guide_legend(ncol = 2)
+  ) +
+  scale_x_date(
+    date_breaks = "1 month",
+    labels = scales::label_date_short()
+  ) +
+  geom_vline(
+    xintercept = lubridate::as_date(c(
+      "2024-01-31"
+    )),
+    linetype = "dotted",
+    colour = "orange",
+    size = .7
+  ) +
+  scale_colour_viridis_d(end = .75)
+
+ggsave(
+  here("reports", "resources", "plot_code_counts.png"),
+  plot_code_counts,
+  height = 5,
+  width = 8
+)
+
+plot_code_counts
+```
+
 ```{r, fig.height=12, fig.width=8, echo = FALSE, warning=FALSE}
 # Read the CSV file
 
 # Process data frame
-plot_code_counts <- df_codes_counts %>%
+plot_code_counts_region <- df_codes_counts %>%
   replace_na(list(practice_region = "(Missing)")) %>%
   mutate(
     measure = factor(measure, levels = pf_consultation_label, labels = pf_consultation_label_desc),
@@ -176,7 +240,7 @@ plot_code_counts <- df_codes_counts %>%
   labs(
     title = NULL,
     x = NULL,
-    y = NULL,
+    y = "Ratio of counts",
     colour = NULL
   ) +
   scale_y_continuous(
@@ -187,7 +251,7 @@ plot_code_counts <- df_codes_counts %>%
     ncol = 1
   ) +
   scale_colour_brewer(palette = "Set1", na.value = "#000000") +
-  theme(legend.position = "top") +
+  theme(legend.position = "bottom") +
   scale_x_date(
     date_breaks = "1 month",
       labels = scales::label_date_short()
@@ -201,5 +265,12 @@ plot_code_counts <- df_codes_counts %>%
       size = .7
     )
 
-plot_code_counts
+ggsave(
+  here("reports", "resources", "plot_code_counts_region.png"),
+  plot_code_counts_region,
+  height = 12,
+  width = 8
+)
+
+plot_code_counts_region
 ```
