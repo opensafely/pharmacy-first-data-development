@@ -11,3 +11,4 @@ venv/
 .Rproj.user/
 released_output/*
 reports/pharmacy_first_data_development.html
+reports/resources/*
