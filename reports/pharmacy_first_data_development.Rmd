@@ -93,7 +93,8 @@ df_tab_med_status_counts <- df_med_status_counts %>%
   ) %>%
   select(-time, -selected_codes) %>%
   distinct() %>%
-  ungroup()
+  ungroup() %>%
+  mutate(pct = n / sum(n))
 
 tab_med_status_counts <- df_tab_med_status_counts %>%
   gt() %>%
@@ -106,17 +107,18 @@ tab_med_status_counts <- df_tab_med_status_counts %>%
     columns = n,
     decimals = 0
   ) %>%
+  fmt_percent(
+    columns = pct,
+    decimals = 3
+  ) %>%
   cols_label(
     med_status = "Medication status",
-    n = "Count"
+    n = "Count",
+    pct = "Percent"
   ) %>%
   cols_align(
     align = "left",
     columns = med_status
-  ) %>%
-  tab_footnote(
-    footnote = "Any medication.",
-    locations = cells_column_labels(columns = n)
   ) %>%
   tab_header(
     title = md("**Count of medication status for any medication from 1st Aug 2023 to 31st Jul 2024**"),
