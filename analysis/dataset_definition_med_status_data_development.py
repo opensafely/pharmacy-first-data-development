@@ -40,6 +40,9 @@ pharmacy_first_ids = clinical_events.where(
     clinical_events.snomedct_code.is_in(pharmacy_first_event_codes)
 ).consultation_id
 
+pharmacy_first_dates = clinical_events.where(
+    clinical_events.snomedct_code.is_in(pharmacy_first_event_codes)
+).date
 
 # Select medications
 # Pre launch, any medication
@@ -76,6 +79,31 @@ selected_medications_pfmed_pfid_pre = (
     .sort_by(medications.date)
 )
 
+# Pre launch, pharmacy first id, any medication
+selected_medications_anymed_pfid_pre = (
+    medications.where(
+        medications.date.is_on_or_between(
+            pharmacy_first_launch_date - time_interval,
+            pharmacy_first_launch_date - days(1),
+        )
+    )
+    .where(medications.consultation_id.is_in(pharmacy_first_ids))
+    .sort_by(medications.date)
+)
+
+# Pre launch, pharmacy first id, same day medication
+selected_medications_pfdate_pfid_pre = (
+    medications.where(
+        medications.date.is_on_or_between(
+            pharmacy_first_launch_date - time_interval,
+            pharmacy_first_launch_date - days(1),
+        )
+    )
+    .where(medications.consultation_id.is_in(pharmacy_first_ids))
+    .where(medications.date.is_in(pharmacy_first_dates))
+    .sort_by(medications.date)
+)
+
 # Post launch, any medication
 selected_medications_any_post = medications.where(
     medications.date.is_on_or_between(
@@ -107,13 +135,40 @@ selected_medications_pfmed_pfid_post = (
     .sort_by(medications.date)
 )
 
+# Post launch, pharmacy first id, any medication
+selected_medications_anymed_pfid_post = (
+    medications.where(
+        medications.date.is_on_or_between(
+            pharmacy_first_launch_date, pharmacy_first_launch_date + time_interval
+        )
+    )
+    .where(medications.consultation_id.is_in(pharmacy_first_ids))
+    .sort_by(medications.date)
+)
+
+# Post launch, pharmacy first id, same day medication
+selected_medications_pfdate_pfid_post = (
+    medications.where(
+        medications.date.is_on_or_between(
+            pharmacy_first_launch_date, pharmacy_first_launch_date + time_interval
+        )
+    )
+    .where(medications.consultation_id.is_in(pharmacy_first_ids))
+    .where(medications.date.is_in(pharmacy_first_dates))
+    .sort_by(medications.date)
+)
+
 selected_medications_dict = {
     "pre_any": selected_medications_any_pre,
     "pre_pfmed": selected_medications_pfmed_pre,
     "pre_pfmedid": selected_medications_pfmed_pfid_pre,
+    "pre_any_pfid" : selected_medications_anymed_pfid_pre,
+    "pre_date_pfid": selected_medications_pfdate_pfid_pre,
     "post_any": selected_medications_any_post,
     "post_pfmed": selected_medications_pfmed_post,
     "post_pfmedid": selected_medications_pfmed_pfid_post,
+    "post_any_pfid": selected_medications_anymed_pfid_post,
+    "post_date_pfid": selected_medications_pfdate_pfid_post,
 }
 
 # Count all medication status
