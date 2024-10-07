@@ -34,3 +34,8 @@ urinary_tract_infection_tx_cod = codelist_from_csv(
     "codelists/opensafely-pharmacy-first-urinary-tract-infection-treatment-dmd.csv",
     column="code",
 )
+
+pharmacy_first_clinical_pathways_cod = codelist_from_csv(
+    "codelists/opensafely-pharmacy-first-clinical-pathway-conditions.csv",
+    column="code",
+)
