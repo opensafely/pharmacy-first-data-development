@@ -4,7 +4,6 @@ from analysis.dataset_definition_med_status_data_development import dataset
 # Run the following command in the terminal to test the dataset definition dataset_definition_med_status_data_development
 # opensafely exec ehrql:v1 assure analysis/test_dataset_definition_med_status_data_development.py
 test_data = {
-
     # Expected in population (pre-launch patient with PF ID and PF MED)
     1: {
         "patients": {"date_of_birth": date(1950, 1, 1)},
@@ -32,11 +31,10 @@ test_data = {
             "post_any_status3": 0,
             "pre_pfmed_status3": 1,
             "pre_pfmedid_status3": 1,
-            "pre_any_pfid_status3": 1, 
+            "pre_any_pfid_status3": 1,
             "pre_date_pfid_status3": 0,
         },
     },
-
     # Expected in population (post-launch patient with PF ID and PF MED)
     2: {
         "patients": {"date_of_birth": date(1950, 1, 1)},
@@ -67,13 +65,12 @@ test_data = {
             "pre_pfmedid_status3": 0,
             "post_pfmedid_status3": 1,
             "pre_any_pfid_status3": 0,
-            "post_any_pfid_status3": 1,  
+            "post_any_pfid_status3": 1,
             "pre_date_pfid_status3": 0,
             "post_date_pfid_status3": 0,
         },
     },
-
-        # Expected in population (post-launch patient with no PF ID but has PF MED)
+    # Expected in population (post-launch patient with no PF ID but has PF MED)
     3: {
         "patients": {"date_of_birth": date(1950, 1, 1)},
         "clinical_events": [
@@ -103,13 +100,12 @@ test_data = {
             "pre_pfmedid_status3": 0,
             "post_pfmedid_status3": 0,
             "pre_any_pfid_status3": 0,
-            "post_any_pfid_status3": 0,  
+            "post_any_pfid_status3": 0,
             "pre_date_pfid_status3": 0,
             "post_date_pfid_status3": 0,
         },
     },
-
-            # Expected in population (post-launch patient with PF ID but with same-day prescribed non-PF MED)
+    # Expected in population (post-launch patient with PF ID but with same-day prescribed non-PF MED)
     4: {
         "patients": {"date_of_birth": date(1950, 1, 1)},
         "clinical_events": [
@@ -139,10 +135,9 @@ test_data = {
             "pre_pfmedid_status3": 0,
             "post_pfmedid_status3": 0,
             "pre_any_pfid_status3": 0,
-            "post_any_pfid_status3": 1,  
+            "post_any_pfid_status3": 1,
             "pre_date_pfid_status3": 0,
             "post_date_pfid_status3": 1,
         },
     },
-
 }
