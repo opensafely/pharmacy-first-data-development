@@ -39,9 +39,7 @@ for measures_name, code_counts in pharmacy_first_code_counts.items():
     measures.define_measure(
         name=measures_name,
         numerator=code_counts,
-        group_by={
-            "practice_region": registration.practice_nuts1_region_name
-            },
+        group_by={"practice_region": registration.practice_nuts1_region_name},
         denominator=patients.exists_for_patient(),
         intervals=intervals,
     )
