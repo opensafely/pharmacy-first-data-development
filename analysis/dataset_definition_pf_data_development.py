@@ -94,7 +94,7 @@ for time_interval_desc, selected_events in selected_events_dict.items():
         selected_events.consultation_id.count_distinct_for_patient()
     )
     dataset.add_column(
-        f"{time_interval_desc}_count_distinct_pfids",
+        f"{time_interval_desc}_count_distinct_ids",
         count_distinct_consultations_query,
     )
 
