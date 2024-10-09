@@ -1,6 +1,5 @@
 from ehrql import create_dataset, months, days
 from ehrql.tables.tpp import patients, clinical_events
-from ehrql.tables.raw.tpp import medications
 
 from datetime import date
 
@@ -13,14 +12,16 @@ dataset.define_population(patients.exists_for_patient())
 
 # Dictionary of pharmacy first codes
 pharmacy_first_events_dict = {
-    # Community Pharmacy (CP) Blood Pressure (BP) Check Service (procedure)
-    "comm_pharm_bp_service": ["1659111000000107"],
-    # Community Pharmacy (CP) Contraception Service (procedure)
-    "comm_pharm_contraception_service": ["1659121000000101"],
     # Community Pharmacist (CP) Consultation Service for minor illness (procedure)
     "comm_pharm_consultation_service": ["1577041000000109"],
     # Pharmacy First service (qualifier value)
     "pharm_first_service": ["983341000000102"],
+    # We are not including Blood Pressure and Contraception services for now
+    # as they are technically not directly part of Pharmacy First
+    # Community Pharmacy (CP) Blood Pressure (BP) Check Service (procedure)
+    # "comm_pharm_bp_service": ["1659111000000107"],
+    # Community Pharmacy (CP) Contraception Service (procedure)
+    # "comm_pharm_contraception_service": ["1659121000000101"],
 }
 
 pharmacy_first_event_codes = [
@@ -71,7 +72,7 @@ selected_pfid_events_post = selected_all_events_post.where(
 
 selected_pfdate_events_post = selected_all_events_post.where(
     clinical_events.date.is_in(pharmacy_first_dates)
-    )
+)
 
 selected_events_dict = {
     "pre_all": selected_all_events_pre,
