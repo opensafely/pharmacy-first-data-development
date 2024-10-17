@@ -1,7 +1,7 @@
 library(magrittr)
 
 # Load data
-df_code_counts <- readr::read_csv(
+df_tmp <- readr::read_csv(
   here::here("output", "data_development", "pf_codes_data_development.csv.gz"),
   col_types = list(
     pre_all_count_distinct_ids = "i",
@@ -43,13 +43,13 @@ df_code_counts <- readr::read_csv(
   post_pfid_count_pf_pathways,
   post_pfdate_count_pf_pathways
 )
-
+print(paste0("df_tmp: ", object.size(df_tmp), " bytes"))
 print("Load data successfully")
 
 # Restructure data into 'long' format
 # Removing the leading "_" using `stringr::str_sub` isnt elegant but I dont know
 # how to do this using regex.
-df_code_counts_long <- df_code_counts %>%
+df_tmp <- df_tmp %>%
   tidyr::pivot_longer(
     cols = c(
       "pre_all_count_distinct_ids",
@@ -75,23 +75,19 @@ df_code_counts_long <- df_code_counts %>%
     names_sep = "(?<=pre|post)"
   )
 
-print(paste0("df_code_counts: ", object.size(df_code_counts), " bytes"))
-rm(df_code_counts)
-gc()
+print(paste0("df_tmp: ", object.size(df_tmp), " bytes"))
 print("Pivot data successfully")
 
-df_code_counts_tidy <- df_code_counts_long %>%
-  dplyr::mutate(selected_events_and_summary_stat = stringr::str_sub(selected_events_and_summary_stat, 2, -1)) %>%
-  tidyr::separate(selected_events_and_summary_stat, into = c("selected_events", "summary_stat"), sep = "(?<=all|pfid|pfdate)") %>%
-  dplyr::mutate(summary_stat = stringr::str_sub(summary_stat, 2, -1))
+df_tmp <- df_tmp %>%
+  # dplyr::mutate(selected_events_and_summary_stat = stringr::str_sub(selected_events_and_summary_stat, 2, -1)) %>%
+  tidyr::separate(selected_events_and_summary_stat, into = c("selected_events", "summary_stat"), sep = "(?<=all|pfid|pfdate)")
+  # dplyr::mutate(summary_stat = stringr::str_sub(summary_stat, 2, -1))
 
-print(paste0("df_code_counts_long: ", object.size(df_code_counts_long), " bytes"))
-rm(df_code_counts_long)
-gc()
+print(paste0("df_tmp: ", object.size(df_tmp), " bytes"))
 print("Tidy data successfully")
 
 # Calculate sum and apply statistical disclosure control
-df_code_counts_summary <- df_code_counts_tidy %>%
+df_tmp <- df_tmp %>%
   dplyr::group_by(time, selected_events, summary_stat) %>%
   dplyr::mutate(count = sum(value, na.rm = TRUE)) %>%
   dplyr::ungroup() %>%
@@ -101,13 +97,11 @@ df_code_counts_summary <- df_code_counts_tidy %>%
   dplyr::select(time, selected_events, summary_stat, count) %>%
   dplyr::distinct()
 
-print(paste0("df_code_counts_tidy: ", object.size(df_code_counts_tidy), " bytes"))
-rm(df_code_counts_tidy)
-print(gc())
+print(paste0("df_tmp: ", object.size(df_tmp), " bytes"))
 print("Summarise data successfully")
 
 # Write summary file
 readr::write_csv(
-  df_code_counts_summary,
+  df_tmp,
   here::here("output", "data_development", "pf_codes_counts.csv")
 )
