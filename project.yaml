@@ -37,9 +37,30 @@ actions:
        moderately_sensitive:
          dataset: output/data_development/med_status_counts.csv
 
-  data_development_pf_codes:
-    run: r:latest analysis/data_development_pf_code_counts.R
+  data_development_pf_code_distinct:
+    run: r:latest analysis/data_development_pf_code_count_distinct.R
     needs: [generate_pf_codes_data_development]
     outputs:
       moderately_sensitive:
-        dataset: output/data_development/pf_codes_counts.csv
+        dataset: output/data_development/pf_codes_count_distinct.csv
+
+  data_development_pf_code_events:
+    run: r:latest analysis/data_development_pf_code_count_events.R
+    needs: [generate_pf_codes_data_development]
+    outputs:
+      moderately_sensitive:
+        dataset: output/data_development/pf_codes_count_events.csv
+
+  data_development_pf_codes_pathways:
+    run: r:latest analysis/data_development_pf_code_count_pathways.R
+    needs: [generate_pf_codes_data_development]
+    outputs:
+      moderately_sensitive:
+        dataset: output/data_development/pf_codes_count_pathways.csv
+
+  data_development_pf_codes_combine:
+    run: r:latest analysis/data_development_pf_code_count_combine.R
+    needs: [data_development_pf_code_distinct, data_development_pf_code_events, data_development_pf_codes_pathways]
+    outputs:
+      moderately_sensitive:
+        dataset: output/data_development/pf_codes_count_summary.csv
