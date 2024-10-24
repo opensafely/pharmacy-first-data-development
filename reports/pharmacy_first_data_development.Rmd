@@ -1,6 +1,10 @@
 ---
 title: "Pharmacy First Data Development Report"
-output: html_document
+output: 
+  html_document:
+  toc: true
+  toc_depth: 4
+date: "`r format(Sys.time(), '%d %B, %Y')`"
 ---
 
 This markdown report creates the tables and figures for the **Pharmacy First Data Development** project. 
@@ -9,6 +13,7 @@ This markdown report creates the tables and figures for the **Pharmacy First Dat
 library(tidyverse)
 library(here)
 library(gt)
+library(webshot2)
 ```
 
 ```{r load-data, include=FALSE}
@@ -19,10 +24,17 @@ df_med_status_counts <- read_csv(
 df_pf_codes_counts <- read_csv(
   here(output_dir, "data_development", "pf_codes_counts.csv")
 )
-df_codes_counts <- read_csv(
+df_codes_count_measures <- read_csv(
   here(output_dir, "clinical_codes", "code_counts_measures.csv")
 )
+df_codes_count_summary <- read_csv(
+  here(output_dir, "data_development", "pf_codes_count_summary.csv")
+)
 ```
+
+## Methods
+
+We utilised the OpenSAFELY framework to conduct a retrospective data development study, aiming to explore codes relevant to the Pharmacy First service.
 
 ```{r tidy-data, include=FALSE}
 # Medication status labels and descriptions
@@ -72,9 +84,26 @@ pf_consultation_label_desc <- c(
   "Consultation Service for minor illness (1577041000000109)",
   "Pharmacy First service (983341000000102)"
 )
+
+summary_stat_label <- c(
+  "count_distinct_ids",
+  "count_pf_events",
+  "count_pf_pathways"
+)
+
+summary_stat_label_desc <- c(
+  "Distinct consultations",
+  "Pharmacy First events",
+  "Pharmacy First pathways"
+)
 ```
 
 ## Medication status
+
+Initially, we investigated the [`medication_status`](https://docs.opensafely.org/ehrql/reference/schemas/raw.tpp/#medications.medication_status) field within the [`medications`](https://docs.opensafely.org/ehrql/reference/schemas/raw.tpp/#medications) table by examining all possible values with counts over a one-year period. 
+The table below illustrates this, alongside a breakdown of all medications in the dataset by their respective status. Subsequently, the Pharmacy First medication status counts are further disaggregated by splitting the one-year period into two six-month intervals: the six months prior to the launch of Pharmacy First, and the six months following it.
+
+Further analysis was conducted by categorising pre- and post-launch data into three groups: all medications, exclusively Pharmacy First medications, and instances where Pharmacy First medications were issued on the same day as a Pharmacy First consultation. This approach helps evaluate the potential impact of the Pharmacy First launch on medication status patterns.
 
 ### Overall medication status counts
 
@@ -219,10 +248,15 @@ tab_pf_med_status_counts
 
 ## Pharmacy First consultation codes
 
+We extracted the consultation IDs associated with consultations that used pharmacy first event SNOMED codes from the clinical events dataset.
+We then visualised the total counts of consultation IDs linked to Pharmacy First, followed by a breakdown across individual clinical services to assess changes in consultation frequency after the Pharmacy First launch. The primary objective of this analysis was to establish evidence that consultations linked with Pharmacy First events could reliably serve as 'Pharmacy First consultations' in future studies.
+
+To provide further insight, consultation ID counts were segmented by clinical service. As these services were in use prior to the Pharmacy First launch, examining background levels and regional patterns allows us to assess their pre-launch usage and identify any post-launch increase, acknowledging that different regions may exhibit varied coding behaviours.
+
 ```{r, fig.height=5, fig.width=8, echo = FALSE, warning=FALSE}
 # Read the CSV file
 
-plot_code_counts <- df_codes_counts %>%
+plot_code_counts <- df_codes_count_measures %>%
   group_by(measure, interval_end) %>%
   mutate(
     numerator_total = sum(numerator, na.rm = TRUE),
@@ -282,7 +316,7 @@ plot_code_counts
 # Read the CSV file
 
 # Process data frame
-plot_code_counts_region <- df_codes_counts %>%
+plot_code_counts_region <- df_codes_count_measures %>%
   replace_na(list(practice_region = "(Missing)")) %>%
   mutate(
     measure = factor(measure, levels = pf_consultation_label, labels = pf_consultation_label_desc),
@@ -332,3 +366,89 @@ ggsave(
 
 plot_code_counts_region
 ```
+
+### Pharmacy First counts summary
+
+The table below summarises the total count of clinical events (sourced from the clinical events dataset) before and after the Pharmacy First launch. This summary provides a visual representation of the rise in Pharmacy First events since the launch, as well as clinical events concerning conditions linked to Pharmacy First pathways. Additionally, further breakdowns include counts of clinical events occurring on the same day as a Pharmacy First consultation, and those with a Pharmacy First consultation ID, to identify potential instances of missing Pharmacy First clinical events. 
+
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+df_pivot_codes_count_summary <- df_codes_count_summary %>%
+  pivot_wider(names_from = c(time, selected_events), values_from = count) %>%
+  mutate(
+    summary_stat = factor(
+      summary_stat,
+      levels = summary_stat_label,
+      labels = summary_stat_label_desc
+    )
+  ) %>%
+  relocate(summary_stat,
+    pre_all, pre_pfdate, pre_pfid,
+    post_all, post_pfdate, post_pfid
+  )
+
+# Display data frame as table
+tab_pf_codes_count_summary <- df_pivot_codes_count_summary %>%
+  gt() %>%
+  sub_missing(
+    columns = everything(),
+    rows = everything(),
+    missing_text = "---"
+  ) %>%
+  fmt_number(
+    columns = c(
+      pre_all,
+      pre_pfdate,
+      pre_pfid,
+      post_all,
+      post_pfdate,
+      post_pfid
+    ),
+    decimals = 0
+  ) %>%
+  tab_spanner(
+    label = "6 months pre PF launch",
+    columns = starts_with("pre_")
+  ) %>%
+  tab_spanner(
+    label = "6 months post PF launch",
+    columns = starts_with("post_")
+  ) %>%
+  cols_label(
+    summary_stat = "Summary Statistic",
+    pre_all = "Any",
+    pre_pfdate = "PF Same Day",
+    pre_pfid = "PF Consultation",
+    post_all = "Any",
+    post_pfdate = "PF Same Day",
+    post_pfid = "PF Consultation"
+  ) %>%
+  cols_align(
+    align = "left",
+    columns = summary_stat
+  ) %>%
+  tab_footnote(
+    footnote = "All clinical events.",
+    locations = cells_column_labels(columns = c(pre_all, post_all))
+  ) %>%
+  tab_footnote(
+    footnote = "Clinical events taking place on the same day as a Pharmacy First consultation .",
+    locations = cells_column_labels(columns = c(pre_pfdate, post_pfdate))
+  ) %>%
+  tab_footnote(
+    footnote = "Clinical events with a Pharmacy First consultation ID.",
+    locations = cells_column_labels(columns = c(pre_pfid, post_pfid))
+  ) %>%
+  tab_header(
+    title = md("**Count of clinical events before and after the Pharmacy First launch date (31st Jan 2024)**"),
+  )
+
+gtsave(
+  tab_pf_codes_count_summary,
+  here("reports", "resources", "tab_pf_codes_count_summary.png"),
+)
+
+tab_pf_codes_count_summary
+
+```
+
+* Pharmacy First pathways (sinusitis, sore throat, otitis media, infected insect bites, impetigo, shingles, uncomplicated urinary tract infections)
