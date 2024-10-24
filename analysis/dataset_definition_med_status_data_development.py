@@ -37,11 +37,11 @@ pharmacy_first_launch_date = date(2024, 2, 1)
 time_interval = months(6)
 
 pharmacy_first_ids = clinical_events.where(
-    clinical_events.snomedct_code.is_in(pharmacy_first_event_codes)
+    clinical_events.snomedct_code.is_in(pharmacy_first_event_codes[2:4])
 ).consultation_id
 
 pharmacy_first_dates = clinical_events.where(
-    clinical_events.snomedct_code.is_in(pharmacy_first_event_codes)
+    clinical_events.snomedct_code.is_in(pharmacy_first_event_codes[2:4])
 ).date
 
 # Select medications
