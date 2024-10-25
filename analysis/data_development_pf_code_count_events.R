@@ -2,9 +2,12 @@ library(magrittr)
 library(here)
 library(readr)
 library(dplyr)
+library(arrow)
 
 # Load data
-df_tmp <- read_csv(here("output", "data_development", "pf_codes_data_development.csv.gz"))
+df_tmp <- arrow::read_feather(
+  here::here("output", "data_development", "pf_codes_data_development.arrow")
+)
 
 print("Load data successfully")
 

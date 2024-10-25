@@ -9,10 +9,10 @@ actions:
     run: >
       ehrql:v1 generate-dataset analysis/dataset_definition_pf_data_development.py
         --test-data-file analysis/test_dataset_definition_pf_data_development.py
-        --output output/data_development/pf_codes_data_development.csv.gz
+        --output output/data_development/pf_codes_data_development.arrow
     outputs:
       highly_sensitive:
-        dataset: output/data_development/pf_codes_data_development.csv.gz
+        dataset: output/data_development/pf_codes_data_development.arrow
 
   generate_med_status_data_development:
     run: >

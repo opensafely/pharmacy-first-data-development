@@ -13,9 +13,9 @@ dataset.define_population(patients.exists_for_patient())
 
 # Pharmacy first clinical codes
 pharmacy_first_event_codes = [
-    "1659111000000107",
-    "1659121000000101",
+    # Community Pharmacist (CP) Consultation Service for minor illness (procedure)
     "1577041000000109",
+    # Pharmacy First service (qualifier value)
     "983341000000102",
 ]
 

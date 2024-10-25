@@ -16,12 +16,6 @@ pharmacy_first_events_dict = {
     "comm_pharm_consultation_service": ["1577041000000109"],
     # Pharmacy First service (qualifier value)
     "pharm_first_service": ["983341000000102"],
-    # We are not including Blood Pressure and Contraception services for now
-    # as they are technically not directly part of Pharmacy First
-    # Community Pharmacy (CP) Blood Pressure (BP) Check Service (procedure)
-    # "comm_pharm_bp_service": ["1659111000000107"],
-    # Community Pharmacy (CP) Contraception Service (procedure)
-    # "comm_pharm_contraception_service": ["1659121000000101"],
 }
 
 pharmacy_first_event_codes = [

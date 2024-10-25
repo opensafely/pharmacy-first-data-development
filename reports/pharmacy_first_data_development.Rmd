@@ -72,15 +72,11 @@ med_status_label_desc <- c(
 
 # Pharmacy first codes
 pf_consultation_label <- c(
-  "count_blood_pressure_service",
-  "count_contraception_service",
   "count_consultation_service",
   "count_pharmacy_first_service"
 )
 
 pf_consultation_label_desc <- c(
-  "Blood Pressure Check Service (1659111000000107)",
-  "Contraception Service (1659121000000101)",
   "Consultation Service for minor illness (1577041000000109)",
   "Pharmacy First service (983341000000102)"
 )
@@ -150,7 +146,8 @@ tab_med_status_counts <- df_tab_med_status_counts %>%
     columns = med_status
   ) %>%
   tab_header(
-    title = md("**Count of medication status for any medication from 1st Aug 2023 to 31st Jul 2024**"),
+    title = md("**Descriptive statistics for medication status**"),
+    subtitle = "This includes all medications issued between 1st Aug 2023 and 31st Jul 2024",
   )
 
 gtsave(
@@ -235,7 +232,8 @@ tab_pf_med_status_counts <- df_tab_pf_med_status_counts %>%
     locations = cells_column_labels(columns = c(pre_pfmedid, post_pfmedid))
   ) %>%
   tab_header(
-    title = md("**Count of medication status before and after the Pharmacy First launch date (31st Jan 2024)**"),
+    title = md("**Descriptive statistics for medication status**"),
+    subtitle = "Counts are broken down by type of medication and timeframe",
   )
 
 gtsave(
@@ -255,7 +253,6 @@ To provide further insight, consultation ID counts were segmented by clinical se
 
 ```{r, fig.height=5, fig.width=8, echo = FALSE, warning=FALSE}
 # Read the CSV file
-
 plot_code_counts <- df_codes_count_measures %>%
   group_by(measure, interval_end) %>%
   mutate(
@@ -427,11 +424,11 @@ tab_pf_codes_count_summary <- df_pivot_codes_count_summary %>%
     columns = summary_stat
   ) %>%
   tab_footnote(
-    footnote = "All clinical events.",
+    footnote = "Total number of distinct consultation IDs.",
     locations = cells_column_labels(columns = c(pre_all, post_all))
   ) %>%
   tab_footnote(
-    footnote = "Clinical events taking place on the same day as a Pharmacy First consultation .",
+    footnote = "Clinical events taking place on the same day as a Pharmacy First consultation.",
     locations = cells_column_labels(columns = c(pre_pfdate, post_pfdate))
   ) %>%
   tab_footnote(
@@ -439,7 +436,8 @@ tab_pf_codes_count_summary <- df_pivot_codes_count_summary %>%
     locations = cells_column_labels(columns = c(pre_pfid, post_pfid))
   ) %>%
   tab_header(
-    title = md("**Count of clinical events before and after the Pharmacy First launch date (31st Jan 2024)**"),
+    title = md("**Descriptive statistics for clinical events related to Pharmacy First services**"),
+    subtitle = "Counts are broken down by different summary statistics and timeframe",
   )
 
 gtsave(
@@ -448,7 +446,6 @@ gtsave(
 )
 
 tab_pf_codes_count_summary
-
 ```
 
 * Pharmacy First pathways (sinusitis, sore throat, otitis media, infected insect bites, impetigo, shingles, uncomplicated urinary tract infections)
