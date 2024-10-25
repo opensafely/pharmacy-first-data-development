@@ -6,10 +6,6 @@ measures.configure_dummy_data(population_size=10000)
 
 # Dictionary of pharmacy first codes
 pharmacy_first_event_codes = {
-    # Community Pharmacy (CP) Blood Pressure (BP) Check Service (procedure)
-    "blood_pressure_service": ["1659111000000107"],
-    # Community Pharmacy (CP) Contraception Service (procedure)
-    "contraception_service": ["1659121000000101"],
     # Community Pharmacist (CP) Consultation Service for minor illness (procedure)
     "consultation_service": ["1577041000000109"],
     # Pharmacy First service (qualifier value)
