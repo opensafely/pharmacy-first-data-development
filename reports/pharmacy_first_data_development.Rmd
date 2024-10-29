@@ -88,9 +88,9 @@ summary_stat_label <- c(
 )
 
 summary_stat_label_desc <- c(
-  "Distinct consultations",
-  "Pharmacy First events",
-  "Pharmacy First pathways"
+  "Count of all events",
+  "Count of PF events",
+  "Count of all PF pathways"
 )
 ```
 
@@ -261,6 +261,7 @@ plot_code_counts <- df_codes_count_measures %>%
     measure = factor(measure, levels = pf_consultation_label, labels = pf_consultation_label_desc),
   ) %>%
   select(measure, interval_end, numerator_total, denominator_total) %>%
+  filter(measure %in% pf_consultation_label_desc) %>%
   distinct() %>%
   ggplot(aes(
     x = interval_end,
@@ -309,7 +310,7 @@ ggsave(
 plot_code_counts
 ```
 
-```{r, fig.height=12, fig.width=8, echo = FALSE, warning=FALSE}
+```{r, fig.height=10, fig.width=8, echo = FALSE, warning=FALSE}
 # Read the CSV file
 
 # Process data frame
@@ -319,6 +320,7 @@ plot_code_counts_region <- df_codes_count_measures %>%
     measure = factor(measure, levels = pf_consultation_label, labels = pf_consultation_label_desc),
     practice_region = fct_relevel(practice_region, "(Missing)", after = Inf)
   ) %>%
+  filter(measure %in% pf_consultation_label_desc) %>%
   ggplot(aes(
     x = interval_end,
     y = ratio,
@@ -412,12 +414,12 @@ tab_pf_codes_count_summary <- df_pivot_codes_count_summary %>%
   ) %>%
   cols_label(
     summary_stat = "Summary Statistic",
-    pre_all = "Any",
-    pre_pfdate = "PF Same Day",
-    pre_pfid = "PF Consultation",
-    post_all = "Any",
-    post_pfdate = "PF Same Day",
-    post_pfid = "PF Consultation"
+    pre_all = "Any event",
+    pre_pfdate = "Same day as PF event",
+    pre_pfid = "Same ID as PF event",
+    post_all = "Any event",
+    post_pfdate = "Same day as PF event",
+    post_pfid = "Same ID as PF event"
   ) %>%
   cols_align(
     align = "left",
