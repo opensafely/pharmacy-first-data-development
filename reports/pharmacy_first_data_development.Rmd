@@ -36,6 +36,36 @@ df_codes_count_summary <- read_csv(
 
 We utilised the OpenSAFELY framework to conduct a retrospective data development study, aiming to explore codes relevant to the Pharmacy First service.
 
+### Codelists
+
+To explore the codes relevant to Pharmacy First, we utilised various codelists to identify specific events and medications.
+
+
+#### Pharmacy First Event Codes
+
+The following two codes were used interchangeably to describe a Pharmacy First consultation. To identify consultations classified as 'Pharmacy First consultations,' we utilised the SNOMED codes below:
+
+- **Community Pharmacist (CP) Consultation Service for minor illness (procedure)**: `"1577041000000109"`
+- **Pharmacy First service (qualifier value)**: `"983341000000102"`
+
+
+#### Pharmacy First Clinical Pathways Codes
+
+We employed the Pharmacy First [clinical pathways codelist](https://www.opencodelists.org/codelist/opensafely/pharmacy-first-clinical-pathway-conditions/7ec97762/#full-list) to categorise clinical events related to Pharmacy First services according to specific Pharmacy First pathways.
+
+
+#### Pharmacy First Medication Codes (by Clinical Pathway)
+
+To isolate medications commonly prescribed by pharmacies for each of the seven Pharmacy First clinical pathways, we utilised seven distinct codelists containing NICE-recommended medications for each pathway. The following codelists were used to identify the supply of any medication included in the Pharmacy First Patient Group Direction for the treatment of Pharmacy First conditions:
+
+- [Acute otitis media](https://www.opencodelists.org/codelist/opensafely/pharmacy-first-acute-otitis-media-treatment-dmd/4122468e/#full-list)
+- [Impetigo](https://www.opencodelists.org/codelist/opensafely/pharmacy-first-impetigo-treatment-dmd/708e6d02/#full-list)
+- [Infected insect bites](https://www.opencodelists.org/codelist/opensafely/pharmacy-first-infected-insect-bites-treatment-dmd/2812d359/#full-list)
+- [Shingles](https://www.opencodelists.org/codelist/opensafely/pharmacy-first-shingles-treatment-dmd/3bbcc6a2/#full-list)
+- [Sinusitis](https://www.opencodelists.org/codelist/opensafely/pharmacy-first-sinusitis-treatment-dmd/0f036024/#full-list)
+- [Sore throat](https://www.opencodelists.org/codelist/opensafely/pharmacy-first-sore-throat-treatment-dmd/2ac5934f/#full-list)
+- [Urinary tract infection](https://www.opencodelists.org/codelist/opensafely/pharmacy-first-urinary-tract-infection-treatment-dmd/54cc39d7/#full-list)
+
 ```{r tidy-data, include=FALSE}
 # Medication status labels and descriptions
 med_status_label <- paste0("status", 0:28)
