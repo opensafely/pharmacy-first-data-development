@@ -158,17 +158,69 @@ selected_medications_pfdate_pfid_post = (
     .sort_by(medications.date)
 )
 
+# Pre launch, pharmacy first med, same day as pf consultation
+selected_medications_pfmed_pfdate_pre = (
+    medications.where(
+        medications.date.is_on_or_between(
+            pharmacy_first_launch_date - time_interval,
+            pharmacy_first_launch_date - days(1),
+        )
+    )
+    .where(medications.dmd_code.is_in(pharmacy_first_med_codes))
+    .where(medications.date.is_in(pharmacy_first_dates))
+    .sort_by(medications.date)
+)
+
+# Post launch, pharmacy first med, same day as pf consultation
+selected_medications_pfmed_pfdate_post = (
+    medications.where(
+        medications.date.is_on_or_between(
+            pharmacy_first_launch_date, pharmacy_first_launch_date + time_interval
+        )
+    )
+    .where(medications.dmd_code.is_in(pharmacy_first_med_codes))
+    .where(medications.date.is_in(pharmacy_first_dates))
+    .sort_by(medications.date)
+)
+
+# Pre launch, any med, same day as pf consultation
+selected_medications_anymed_pfdate_pre = (
+    medications.where(
+        medications.date.is_on_or_between(
+            pharmacy_first_launch_date - time_interval,
+            pharmacy_first_launch_date - days(1),
+        )
+    )
+    .where(medications.date.is_in(pharmacy_first_dates))
+    .sort_by(medications.date)
+)
+
+# Post launch, any med, same day as pf consultation
+selected_medications_anymed_pfdate_post = (
+    medications.where(
+        medications.date.is_on_or_between(
+            pharmacy_first_launch_date, pharmacy_first_launch_date + time_interval
+        )
+    )
+    .where(medications.date.is_in(pharmacy_first_dates))
+    .sort_by(medications.date)
+)
+
 selected_medications_dict = {
     "pre_any": selected_medications_any_pre,
     "pre_pfmed": selected_medications_pfmed_pre,
     "pre_pfmedid": selected_medications_pfmed_pfid_pre,
     "pre_any_pfid": selected_medications_anymed_pfid_pre,
+    "pre_anypfdate": selected_medications_anymed_pfdate_pre,
     "pre_date_pfid": selected_medications_pfdate_pfid_pre,
+    "pre_pfmedpfdate": selected_medications_pfmed_pfdate_pre,
     "post_any": selected_medications_any_post,
     "post_pfmed": selected_medications_pfmed_post,
     "post_pfmedid": selected_medications_pfmed_pfid_post,
     "post_any_pfid": selected_medications_anymed_pfid_post,
+    "post_anypfdate": selected_medications_anymed_pfdate_post,
     "post_date_pfid": selected_medications_pfdate_pfid_post,
+    "post_pfmedpfdate": selected_medications_pfmed_pfdate_post,
 }
 
 # Count all medication status

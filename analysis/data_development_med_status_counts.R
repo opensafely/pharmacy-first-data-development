@@ -12,12 +12,16 @@ selected_variables_list <- list(
   "pre_pfmed" <- paste0("pre_pfmed_", paste0("status", 0:28)),
   "pre_pfmedid" <- paste0("pre_pfmedid_", paste0("status", 0:28)),
   "pre_any_pfid" <- paste0("pre_any_pfid_", paste0("status", 0:28)),
+  "pre_anypfdate" <- paste0("pre_anypfdate", paste0("status", 0:28)),
   "pre_date_pfid" <- paste0("pre_date_pfid_", paste0("status", 0:28)),
+  "pre_pfmedpfdate" <- paste0("pre_pfmedpfdate", paste0("status", 0:28)),
   "post_any" <- paste0("post_any_", paste0("status", 0:28)),
   "post_pfmed" <- paste0("post_pfmed_", paste0("status", 0:28)),
   "post_pfmedid" <- paste0("post_pfmedid_", paste0("status", 0:28)),
   "post_any_pfid" <- paste0("post_any_pfid_", paste0("status", 0:28)),
-  "post_date_pfid" <- paste0("post_date_pfid_", paste0("status", 0:28))
+  "post_anypfdate" <- paste0("post_anypfdate", paste0("status", 0:28)),
+  "post_date_pfid" <- paste0("post_date_pfid_", paste0("status", 0:28)),
+  "post_pfmedpfdate" <- paste0("post_pfmedpfdate", paste0("status", 0:28)),
 )
 
 # Check that all names defined in data_extractions are in df df_med_status
