@@ -8,16 +8,18 @@ df_med_status <- arrow::read_feather(
 print("Load data successfully")
 
 selected_variables_list <- list(
-  "pre_any" <- paste0("pre_any_", paste0("status", 0:28)),
+  "pre_anymed" <- paste0("pre_anymed_", paste0("status", 0:28)),
+  "pre_anypfid" <- paste0("pre_anypfid_", paste0("status", 0:28)),
+  "pre_anypfdate" <- paste0("pre_anypfdate_", paste0("status", 0:28)),
   "pre_pfmed" <- paste0("pre_pfmed_", paste0("status", 0:28)),
   "pre_pfmedid" <- paste0("pre_pfmedid_", paste0("status", 0:28)),
-  "pre_any_pfid" <- paste0("pre_any_pfid_", paste0("status", 0:28)),
-  "pre_date_pfid" <- paste0("pre_date_pfid_", paste0("status", 0:28)),
-  "post_any" <- paste0("post_any_", paste0("status", 0:28)),
+  "pre_pfmedpfdate" <- paste0("pre_pfmedpfdate_", paste0("status", 0:28)),
+  "post_anymed" <- paste0("post_anymed_", paste0("status", 0:28)),
+  "post_anypfid" <- paste0("post_anypfid_", paste0("status", 0:28)),
+  "post_anypfdate" <- paste0("post_anypfdate_", paste0("status", 0:28)),
   "post_pfmed" <- paste0("post_pfmed_", paste0("status", 0:28)),
   "post_pfmedid" <- paste0("post_pfmedid_", paste0("status", 0:28)),
-  "post_any_pfid" <- paste0("post_any_pfid_", paste0("status", 0:28)),
-  "post_date_pfid" <- paste0("post_date_pfid_", paste0("status", 0:28))
+  "post_pfmedpfdate" <- paste0("post_pfmedpfdate_", paste0("status", 0:28))
 )
 
 # Check that all names defined in data_extractions are in df df_med_status
