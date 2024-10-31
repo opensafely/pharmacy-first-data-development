@@ -207,19 +207,17 @@ selected_medications_anymed_pfdate_post = (
 )
 
 selected_medications_dict = {
-    "pre_any": selected_medications_any_pre,
+    "pre_anymed": selected_medications_any_pre,
+    "pre_anypfid": selected_medications_anymed_pfid_pre,
+    "pre_anypfdate": selected_medications_anymed_pfdate_pre,
     "pre_pfmed": selected_medications_pfmed_pre,
     "pre_pfmedid": selected_medications_pfmed_pfid_pre,
-    "pre_any_pfid": selected_medications_anymed_pfid_pre,
-    "pre_anypfdate": selected_medications_anymed_pfdate_pre,
-    "pre_date_pfid": selected_medications_pfdate_pfid_pre,
     "pre_pfmedpfdate": selected_medications_pfmed_pfdate_pre,
-    "post_any": selected_medications_any_post,
+    "post_anymed": selected_medications_any_post,
+    "post_anypfid": selected_medications_anymed_pfid_post,
+    "post_anypfdate": selected_medications_anymed_pfdate_post,
     "post_pfmed": selected_medications_pfmed_post,
     "post_pfmedid": selected_medications_pfmed_pfid_post,
-    "post_any_pfid": selected_medications_anymed_pfid_post,
-    "post_anypfdate": selected_medications_anymed_pfdate_post,
-    "post_date_pfid": selected_medications_pfdate_pfid_post,
     "post_pfmedpfdate": selected_medications_pfmed_pfdate_post,
 }
 
