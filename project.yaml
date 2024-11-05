@@ -30,9 +30,23 @@ actions:
       moderately_sensitive:
         measure: output/clinical_codes/code_counts_measures.csv
 
-  data_development_med_status:
-     run: r:latest analysis/data_development_med_status_counts.R
+  data_development_med_status_pre:
+     run: r:latest analysis/data_development_med_status_pre_counts.R
      needs: [generate_med_status_data_development]
+     outputs:
+       moderately_sensitive:
+         dataset: output/data_development/med_status_pre_counts.csv
+  
+  data_development_med_status_post:
+     run: r:latest analysis/data_development_med_status_post_counts.R
+     needs: [generate_med_status_data_development]
+     outputs:
+       moderately_sensitive:
+         dataset: output/data_development/med_status_post_counts.csv
+
+  data_development_med_status_combine:
+     run: r:latest analysis/data_development_med_status_combine.R
+     needs: [data_development_med_status_pre, data_development_med_status_post]
      outputs:
        moderately_sensitive:
          dataset: output/data_development/med_status_counts.csv
