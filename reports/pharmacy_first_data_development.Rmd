@@ -136,7 +136,7 @@ Further analysis was conducted by categorising pre- and post-launch data into th
 ```{r, message=FALSE, warning=FALSE, echo = FALSE}
 df_tab_med_status_counts <- df_med_status_counts %>%
   replace_na(list(n = 0)) %>%
-  filter(selected_codes == "any") %>%
+  filter(selected_codes == "anymed") %>%
   group_by(med_status) %>%
   mutate(
     n = sum(n, na.rm = TRUE),
@@ -202,12 +202,11 @@ df_tab_pf_med_status_counts <- df_med_status_counts %>%
       labels = med_status_label_desc
     )
   ) %>%
-  relocate(
+  select(
     med_status,
-    # pre_anymed, pre_pfmed, pre_pfmedid,
-    post_anymed, post_anypfid, post_anypfdate, post_pfmed, post_pfmedid, post_pfmedpfdate
-  ) %>%
-  select(-starts_with("pre_"))
+    post_anymed, post_anypfid, post_anypfdate,
+    post_pfmed, post_pfmedid, post_pfmedpfdate
+  )
 
 # Display data frame as table
 tab_pf_med_status_counts <- df_tab_pf_med_status_counts %>%
@@ -219,9 +218,6 @@ tab_pf_med_status_counts <- df_tab_pf_med_status_counts %>%
   ) %>%
   fmt_number(
     columns = c(
-      # pre_anymed,
-      # pre_pfmed,
-      # pre_pfmedid,
       post_anymed,
       post_anypfid,
       post_anypfdate,
@@ -231,57 +227,54 @@ tab_pf_med_status_counts <- df_tab_pf_med_status_counts %>%
     ),
     decimals = 0
   ) %>%
-  # tab_spanner(
-  #   label = "6 months pre PF launch",
-  #   columns = starts_with("pre_")
-  # ) %>%
   tab_spanner(
-    label = "6 months post PF launch",
-    columns = starts_with("post_")
+    label = md("**Any medication**"),
+    columns = contains("any")
+  ) %>%
+  tab_spanner(
+    label = md("**Pharmacy First medications**"),
+    columns = contains("pfmed")
   ) %>%
   cols_label(
-    med_status = "Medication status",
-    # pre_anymed = "Any",
-    # pre_pfmed = "PF Med",
-    # pre_pfmedid = "PF Med & Consult",
-    post_anymed = "Any",
-    post_anypfid = "Any Med & Consult",
-    post_anypfdate = "Any Med & Same Day",
-    post_pfmed = "PF Med",
-    post_pfmedid = "PF Med & Consult",
-    post_pfmedpfdate = "PF Med & Same Day"
+    med_status = md("**Medication status**"),
+    post_anymed = "All",
+    post_anypfid = "PF ID",
+    post_anypfdate = "Same Day",
+    post_pfmed = "All",
+    post_pfmedid = "PF ID",
+    post_pfmedpfdate = "Same Day"
   ) %>%
   cols_align(
     align = "left",
     columns = med_status
   ) %>%
   tab_footnote(
-    footnote = "Any medication.",
+    footnote = "All prescribed medications.",
     locations = cells_column_labels(columns = c(post_anymed))
   ) %>%
   tab_footnote(
-    footnote = "Any medication and Pharmacy First consultation.",
+    footnote = "Medications with Pharmacy First consultation ID.",
     locations = cells_column_labels(columns = c(post_anypfid))
   ) %>%
   tab_footnote(
-    footnote = "Any medication and same day as Pharmacy First consultation.",
+    footnote = "Medications prescribed on the same day as a Pharmacy First consultation ID.",
     locations = cells_column_labels(columns = c(post_anypfdate))
   ) %>%
   tab_footnote(
-    footnote = "Pharmacy First medications.",
+    footnote = "All prescribed 'Pharmacy First' medications.",
     locations = cells_column_labels(columns = c(post_pfmed))
   ) %>%
   tab_footnote(
-    footnote = "Pharmacy First medications and Pharmacy First consultation.",
+    footnote = "'Pharmacy First' medications with Pharmacy First consultation ID.",
     locations = cells_column_labels(columns = c(post_pfmedid))
   ) %>%
   tab_footnote(
-    footnote = "Pharmacy First medications and same day as Pharmacy First consultation.",
+    footnote = "'Pharmacy First' medications on the same day as a Pharmacy First consultation ID.",
     locations = cells_column_labels(columns = c(post_pfmedpfdate))
   ) %>%
   tab_header(
-    title = md("**Descriptive statistics for medication status**"),
-    subtitle = "Counts are broken down by type of medication and timeframe",
+    title = md("**Breakdown of medication status for Pharmacy First service**"),
+    subtitle = "Timeframe 1st Feb 2024 to 31st July 2024",
   )
 
 gtsave(
@@ -393,16 +386,16 @@ plot_code_counts_region <- df_codes_count_measures %>%
   theme(legend.position = "bottom") +
   scale_x_date(
     date_breaks = "1 month",
-      labels = scales::label_date_short()
-    ) +
-    geom_vline(
-      xintercept = lubridate::as_date(c(
-        "2024-01-31"
-      )),
-      linetype = "dotted",
-      colour = "orange",
-      size = .7
-    )
+    labels = scales::label_date_short()
+  ) +
+  geom_vline(
+    xintercept = lubridate::as_date(c(
+      "2024-01-31"
+    )),
+    linetype = "dotted",
+    colour = "orange",
+    size = .7
+  )
 
 ggsave(
   here("reports", "resources", "plot_code_counts_region.png"),
@@ -429,8 +422,9 @@ df_pivot_codes_count_summary <- df_codes_count_summary %>%
     )
   ) %>%
   select(summary_stat, post_all, post_pfdate, post_pfid) %>%
-  relocate(summary_stat,
-    post_all, post_pfdate, post_pfid 
+  relocate(
+    summary_stat,
+    post_all, post_pfdate, post_pfid
   )
 
 # Display data frame as table
