@@ -196,7 +196,6 @@ df_tab_pf_med_status_counts <- df_med_status_counts %>%
   replace_na(list(n = 0)) %>%
   pivot_wider(names_from = c(time, selected_codes), values_from = n) %>%
   mutate(
-    pre_pfmedid = NA,
     med_status = factor(
       med_status,
       levels = med_status_label,
@@ -205,9 +204,10 @@ df_tab_pf_med_status_counts <- df_med_status_counts %>%
   ) %>%
   relocate(
     med_status,
-    pre_any, pre_pfmed, pre_pfmedid,
-    post_any, post_pfmed, post_pfmedid
-  )
+    # pre_anymed, pre_pfmed, pre_pfmedid,
+    post_anymed, post_anypfid, post_anypfdate, post_pfmed, post_pfmedid, post_pfmedpfdate
+  ) %>%
+  select(-starts_with("pre_"))
 
 # Display data frame as table
 tab_pf_med_status_counts <- df_tab_pf_med_status_counts %>%
@@ -219,31 +219,37 @@ tab_pf_med_status_counts <- df_tab_pf_med_status_counts %>%
   ) %>%
   fmt_number(
     columns = c(
-      pre_any,
-      pre_pfmed,
-      pre_pfmedid,
-      post_any,
+      # pre_anymed,
+      # pre_pfmed,
+      # pre_pfmedid,
+      post_anymed,
+      post_anypfid,
+      post_anypfdate,
       post_pfmed,
-      post_pfmedid
+      post_pfmedid,
+      post_pfmedpfdate
     ),
     decimals = 0
   ) %>%
-  tab_spanner(
-    label = "6 months pre PF launch",
-    columns = starts_with("pre_")
-  ) %>%
+  # tab_spanner(
+  #   label = "6 months pre PF launch",
+  #   columns = starts_with("pre_")
+  # ) %>%
   tab_spanner(
     label = "6 months post PF launch",
     columns = starts_with("post_")
   ) %>%
   cols_label(
     med_status = "Medication status",
-    pre_any = "Any",
-    pre_pfmed = "PF Med",
-    pre_pfmedid = "PF Med & Consult",
-    post_any = "Any",
+    # pre_anymed = "Any",
+    # pre_pfmed = "PF Med",
+    # pre_pfmedid = "PF Med & Consult",
+    post_anymed = "Any",
+    post_anypfid = "Any Med & Consult",
+    post_anypfdate = "Any Med & Same Day",
     post_pfmed = "PF Med",
-    post_pfmedid = "PF Med & Consult"
+    post_pfmedid = "PF Med & Consult",
+    post_pfmedpfdate = "PF Med & Same Day"
   ) %>%
   cols_align(
     align = "left",
@@ -251,15 +257,27 @@ tab_pf_med_status_counts <- df_tab_pf_med_status_counts %>%
   ) %>%
   tab_footnote(
     footnote = "Any medication.",
-    locations = cells_column_labels(columns = c(pre_any, post_any))
+    locations = cells_column_labels(columns = c(post_anymed))
+  ) %>%
+  tab_footnote(
+    footnote = "Any medication and Pharmacy First consultation.",
+    locations = cells_column_labels(columns = c(post_anypfid))
+  ) %>%
+  tab_footnote(
+    footnote = "Any medication and same day as Pharmacy First consultation.",
+    locations = cells_column_labels(columns = c(post_anypfdate))
   ) %>%
   tab_footnote(
     footnote = "Pharmacy First medications.",
-    locations = cells_column_labels(columns = c(pre_pfmed, post_pfmed))
+    locations = cells_column_labels(columns = c(post_pfmed))
   ) %>%
   tab_footnote(
     footnote = "Pharmacy First medications and Pharmacy First consultation.",
-    locations = cells_column_labels(columns = c(pre_pfmedid, post_pfmedid))
+    locations = cells_column_labels(columns = c(post_pfmedid))
+  ) %>%
+  tab_footnote(
+    footnote = "Pharmacy First medications and same day as Pharmacy First consultation.",
+    locations = cells_column_labels(columns = c(post_pfmedpfdate))
   ) %>%
   tab_header(
     title = md("**Descriptive statistics for medication status**"),
@@ -410,9 +428,9 @@ df_pivot_codes_count_summary <- df_codes_count_summary %>%
       labels = summary_stat_label_desc
     )
   ) %>%
+  select(summary_stat, post_all, post_pfdate, post_pfid) %>%
   relocate(summary_stat,
-    pre_all, pre_pfdate, pre_pfid,
-    post_all, post_pfdate, post_pfid
+    post_all, post_pfdate, post_pfid 
   )
 
 # Display data frame as table
@@ -425,9 +443,6 @@ tab_pf_codes_count_summary <- df_pivot_codes_count_summary %>%
   ) %>%
   fmt_number(
     columns = c(
-      pre_all,
-      pre_pfdate,
-      pre_pfid,
       post_all,
       post_pfdate,
       post_pfid
@@ -435,18 +450,11 @@ tab_pf_codes_count_summary <- df_pivot_codes_count_summary %>%
     decimals = 0
   ) %>%
   tab_spanner(
-    label = "6 months pre PF launch",
-    columns = starts_with("pre_")
-  ) %>%
-  tab_spanner(
     label = "6 months post PF launch",
     columns = starts_with("post_")
   ) %>%
   cols_label(
     summary_stat = "Summary Statistic",
-    pre_all = "Any event",
-    pre_pfdate = "Same day as PF event",
-    pre_pfid = "Same ID as PF event",
     post_all = "Any event",
     post_pfdate = "Same day as PF event",
     post_pfid = "Same ID as PF event"
@@ -457,15 +465,15 @@ tab_pf_codes_count_summary <- df_pivot_codes_count_summary %>%
   ) %>%
   tab_footnote(
     footnote = "Total number of distinct consultation IDs.",
-    locations = cells_column_labels(columns = c(pre_all, post_all))
+    locations = cells_column_labels(columns = c(post_all))
   ) %>%
   tab_footnote(
     footnote = "Clinical events taking place on the same day as a Pharmacy First consultation.",
-    locations = cells_column_labels(columns = c(pre_pfdate, post_pfdate))
+    locations = cells_column_labels(columns = c(post_pfdate))
   ) %>%
   tab_footnote(
     footnote = "Clinical events with a Pharmacy First consultation ID.",
-    locations = cells_column_labels(columns = c(pre_pfid, post_pfid))
+    locations = cells_column_labels(columns = c(post_pfid))
   ) %>%
   tab_header(
     title = md("**Descriptive statistics for clinical events related to Pharmacy First services**"),
@@ -478,6 +486,10 @@ gtsave(
 )
 
 tab_pf_codes_count_summary
+
+# Alternative way of presenting summary table
+# df_transposed_codes_summary <- t(df_pivot_codes_count_summary)
+# print(df_transposed_codes_summary)
 ```
 
 * Pharmacy First pathways (sinusitis, sore throat, otitis media, infected insect bites, impetigo, shingles, uncomplicated urinary tract infections)
