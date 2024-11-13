@@ -78,3 +78,12 @@ actions:
     outputs:
       moderately_sensitive:
         dataset: output/data_development/pf_codes_count_summary.csv
+
+  generate_non_pf_medications_measures:
+    run: >
+      ehrql:v1 generate-measures analysis/measures_definition_nonpf_med_counts.py
+      --dummy-tables dummy_tables
+      --output output/measures/nonpf_medications_measures.csv
+    outputs:
+      moderately_sensitive:
+        measure: output/measures/nonpf_medications_measures.csv
