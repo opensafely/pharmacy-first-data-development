@@ -45,7 +45,7 @@ has_pharmacy_first_medication = first_selected_medication.is_in(pharmacy_first_m
 
 # Numerator, patients with a PF medication
 # This allows me to count all (first) medications linked to a PF consultation
-numerator = has_pharmacy_first_consultation
+numerator = first_selected_medication.is_not_null()
 
 # Denominator, registered patients (f/m) with a PF consultation
 denominator = (
