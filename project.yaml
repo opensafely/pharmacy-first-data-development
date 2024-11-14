@@ -78,3 +78,12 @@ actions:
     outputs:
       moderately_sensitive:
         dataset: output/data_development/pf_codes_count_summary.csv
+
+  generate_pf_med_counts_measures:
+    run: >
+      ehrql:v1 generate-measures analysis/measures_definition_pf_consultation_med_counts.py
+      --dummy-tables dummy_tables
+      --output output/measures/consultation_med_counts_measures.csv
+    outputs:
+      moderately_sensitive:
+        measure: output/measures/consultation_med_counts_measures.csv
