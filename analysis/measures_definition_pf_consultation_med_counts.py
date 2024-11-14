@@ -32,13 +32,13 @@ pharmacy_first_ids = pharmacy_first_events.consultation_id
 has_pharmacy_first_consultation = pharmacy_first_events.exists_for_patient()
 
 # Select Pharmacy First consultations during interval date range
-selected_medication = medications.where(
+selected_medications = medications.where(
     medications.date.is_on_or_between(INTERVAL.start_date, INTERVAL.end_date)
 ).where(medications.consultation_id.is_in(pharmacy_first_ids))
 
 # First medication for each patient
 first_selected_medication = (
-    selected_medication.sort_by(medications.date).first_for_patient().dmd_code
+    selected_medications.sort_by(selected_medications.date).first_for_patient().dmd_code
 )
 # Boolean variable that selected medication is part of pharmacy first med codelists
 has_pharmacy_first_medication = first_selected_medication.is_in(pharmacy_first_med_codes)
@@ -56,7 +56,7 @@ denominator = (
 
 measures.define_measure(
     name="pf_medication_count",
-    numerator=numerator,
+    numerator = first_selected_medication.is_not_null(),
     denominator=denominator,
     group_by={
         "dmd_code": first_selected_medication,
