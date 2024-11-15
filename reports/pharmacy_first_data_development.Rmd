@@ -289,35 +289,9 @@ tab_pf_med_status_counts
 
 ### Validation 
 ```{r, message=FALSE, warning=FALSE, echo = FALSE}
-
-# Function to download and read the xlsx files
-read_xlsx_from_url <- function(url_list, sheet = NULL, skip = NULL, ...) {
-  temp_file <- tempfile(fileext = ".xlsx")
-  GET(
-    url_list,
-    write_disk(temp_file, overwrite = TRUE)
-  )
-  readxl::read_xlsx(
-    temp_file,
-    col_names = TRUE,
-    .name_repair = janitor::make_clean_names,
-    sheet = sheet,
-    skip = skip,
-    ...
-  )
-}
-
-df <- read_xlsx_from_url(
-  "https://github.com/user-attachments/files/17774058/EPS.and.eRD.Prescribing.Dashboard.July.2024.xlsx",
-  skip = 2,
-  sheet = "Historical Data"
+df_filtered <- read_csv(
+  (here("lib", "validation", "data", "eps_erd_prescribing_2024_feb.csv"))
 )
-
-df_filtered <- df %>%
-  select(month, region_code, practice_code, eps_items, erd_items) %>%
-  filter(month %in% c(202402, 202403, 202404, 202405, 202406, 202407))
-
-df_filtered |> write_csv(here("lib", "validation", "eps_erd_prescribing_2024_feb.csv"))
 
 eps_validation = sum(df_filtered$eps_items) * 0.4
 erd_validation = sum(df_filtered$erd_items) * 0.4
