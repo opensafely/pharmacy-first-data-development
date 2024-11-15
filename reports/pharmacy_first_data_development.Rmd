@@ -14,6 +14,8 @@ library(tidyverse)
 library(here)
 library(gt)
 library(webshot2)
+library(janitor)
+library(httr)
 ```
 
 ```{r load-data, include=FALSE}
@@ -283,6 +285,81 @@ gtsave(
 )
 
 tab_pf_med_status_counts
+```
+
+### Validation 
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+
+# Function to download and read the xlsx files
+read_xlsx_from_url <- function(url_list, sheet = NULL, skip = NULL, ...) {
+  temp_file <- tempfile(fileext = ".xlsx")
+  GET(
+    url_list,
+    write_disk(temp_file, overwrite = TRUE)
+  )
+  readxl::read_xlsx(
+    temp_file,
+    col_names = TRUE,
+    .name_repair = janitor::make_clean_names,
+    sheet = sheet,
+    skip = skip,
+    ...
+  )
+}
+
+df <- read_xlsx_from_url(
+  "https://github.com/user-attachments/files/17774058/EPS.and.eRD.Prescribing.Dashboard.July.2024.xlsx",
+  skip = 2,
+  sheet = "Historical Data"
+)
+
+df_filtered <- df %>%
+  select(month, region_code, practice_code, eps_items, erd_items) %>%
+  filter(month %in% c(202402, 202403, 202404, 202405, 202406, 202407))
+
+df_filtered |> write_csv(here("lib", "validation", "eps_erd_prescribing_2024_feb"))
+
+eps_validation = sum(df_filtered$eps_items) * 0.4
+erd_validation = sum(df_filtered$erd_items) * 0.4
+
+validation_any_values = c(eps_validation, erd_validation)
+```
+In order to validate that the number of medications that we see is as we expect, we will use the publicly available [Electronic Prescription Service (EPS) and electronic Repeat Dispensing (eRD) data](https://www.nhsbsa.nhs.uk/access-our-data-products/epact2/dashboards-and-specifications/electronic-prescription-service-eps-and-electronic-repeat-dispensing-erd-utilisation-dashboard) published by the NHSBSA as validation data. 
+The EPS and eRD data relate to the '0 - Normal' and '8 - Repeat dispensed' medication statuses from the table above. 
+
+We expected to see roughly 40% of this overall data for the months we included in our study, as shown in the table below:
+
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+
+# Add new column which contains validation values
+df_filtered_med_status_counts <- df_tab_pf_med_status_counts %>%
+  filter(med_status %in% c("0 - Normal", "8 - Repeat dispensed")) %>%
+  mutate(comparison_value = validation_any_values)
+
+tab_any_validation <- df_filtered_med_status_counts %>%
+  select(med_status, post_anymed, comparison_value) %>%
+  gt() %>%
+  tab_header(
+    title = "Comparison of EPS and ERD values to public (validation) data",
+    subtitle = "Timeframe 1st Feb 2024 to 31st July 2024",
+  ) %>%
+  cols_label(
+    med_status = "Med Status",
+    post_anymed = "Any Medication",
+    comparison_value = "Medication (Validation)"
+  ) %>%
+  fmt_number(
+    columns = vars(post_anymed, comparison_value),
+    decimals = 0
+  ) %>%
+  tab_footnote(
+    footnote = "40% of data taken from NHSBSA EPS and eRD dispensing data - July 2024",
+    locations = cells_column_labels(columns = c(comparison_value))
+  )
+# Display the table for validation of 'any medication'
+tab_any_validation
+
+
 ```
 
 ## Pharmacy First consultation codes
