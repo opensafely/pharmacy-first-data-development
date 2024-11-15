@@ -317,7 +317,7 @@ df_filtered <- df %>%
   select(month, region_code, practice_code, eps_items, erd_items) %>%
   filter(month %in% c(202402, 202403, 202404, 202405, 202406, 202407))
 
-df_filtered |> write_csv(here("lib", "validation", "eps_erd_prescribing_2024_feb"))
+df_filtered |> write_csv(here("lib", "validation", "eps_erd_prescribing_2024_feb.csv"))
 
 eps_validation = sum(df_filtered$eps_items) * 0.4
 erd_validation = sum(df_filtered$erd_items) * 0.4
