@@ -216,6 +216,7 @@ df_tab_pf_med_status_counts <- df_med_status_counts %>%
 
 # Display data frame as table
 tab_pf_med_status_counts <- df_tab_pf_med_status_counts %>%
+  filter(med_status %in% c("0 - Normal", "4 - Historical", "8 - Repeat dispensed", "11 - Hospital")) %>%
   gt() %>%
   sub_missing(
     columns = everything(),
@@ -255,28 +256,16 @@ tab_pf_med_status_counts <- df_tab_pf_med_status_counts %>%
     columns = med_status
   ) %>%
   tab_footnote(
-    footnote = "All prescribed medications.",
-    locations = cells_column_labels(columns = c(post_anymed))
+    footnote = "All medications.",
+    locations = cells_column_labels(columns = c(post_anymed, post_pfmed))
   ) %>%
   tab_footnote(
     footnote = "Medications with Pharmacy First consultation ID.",
-    locations = cells_column_labels(columns = c(post_anypfid))
+    locations = cells_column_labels(columns = c(post_anypfid, post_pfmedid))
   ) %>%
   tab_footnote(
     footnote = "Medications prescribed on the same day as a Pharmacy First consultation ID.",
-    locations = cells_column_labels(columns = c(post_anypfdate))
-  ) %>%
-  tab_footnote(
-    footnote = "All prescribed 'Pharmacy First' medications.",
-    locations = cells_column_labels(columns = c(post_pfmed))
-  ) %>%
-  tab_footnote(
-    footnote = "'Pharmacy First' medications with Pharmacy First consultation ID.",
-    locations = cells_column_labels(columns = c(post_pfmedid))
-  ) %>%
-  tab_footnote(
-    footnote = "'Pharmacy First' medications on the same day as a Pharmacy First consultation ID.",
-    locations = cells_column_labels(columns = c(post_pfmedpfdate))
+    locations = cells_column_labels(columns = c(post_anypfdate, post_pfmedpfdate))
   ) %>%
   tab_header(
     title = md("**Breakdown of medication status for Pharmacy First service**"),
@@ -498,10 +487,6 @@ tab_pf_codes_count_summary <- df_pivot_codes_count_summary %>%
     ),
     decimals = 0
   ) %>%
-  tab_spanner(
-    label = "6 months post PF launch",
-    columns = starts_with("post_")
-  ) %>%
   cols_label(
     summary_stat = "Summary Statistic",
     post_all = "Any event",
@@ -525,9 +510,7 @@ tab_pf_codes_count_summary <- df_pivot_codes_count_summary %>%
     locations = cells_column_labels(columns = c(post_pfid))
   ) %>%
   tab_header(
-    title = md("**Descriptive statistics for clinical events related to Pharmacy First services**"),
-    subtitle = "Counts are broken down by different summary statistics and timeframe",
-  )
+    title = md("**Descriptive statistics for clinical events related to Pharmacy First services**"))
 
 gtsave(
   tab_pf_codes_count_summary,
@@ -549,7 +532,7 @@ codelist_file_names <- list.files(
   full.names = FALSE
 )
 
-code_descriptions <- here("codelists", codelist_file_names) |>
+pf_med_code_desc <- here("codelists", codelist_file_names) |>
   map(~ read_csv(.x, col_types = cols(
     code = col_character()
   ))) |>
@@ -557,20 +540,10 @@ code_descriptions <- here("codelists", codelist_file_names) |>
   select(code, term) |>
   distinct()
 
-df_med_count_results <- df_consultation_med_counts |>
-  select(numerator, code = dmd_code, pharmacy_first_med) |>
-  left_join(code_descriptions, by = "code") |>
-  filter(numerator > 0) |>
-    group_by(code, pharmacy_first_med, term) |>
-    summarise(
-      count = sum(numerator, na.rm = TRUE),
-      .groups = 'drop') |>
-    arrange(desc(code))
-
-non_pf_med_dict  <- tribble(
+top10_nonpf_med_code_desc  <- tribble(
   ~code, ~term,
   "37388111000001102", "Macrobid 100mg modified-release capsules",
-  "531611000001106", "	Difflam 0.15% spray",
+  "531611000001106", "Difflam 0.15% spray",
   "3697711000001104", "EarCalm 2% spray",
   "42533911000001101", "Coryen 27.5micrograms/dose nasal spray",
   "623911000001105", "Hydrocortisone 1% cream",
@@ -581,56 +554,60 @@ non_pf_med_dict  <- tribble(
   "4648111000001108", "Robitussin Chesty Cough 100mg/5ml oral solution"
 )
 
-df_pf_med_counts <- df_med_count_results %>% 
-  filter(pharmacy_first_med == TRUE) %>%
-  arrange(desc(count))
+combined_med_code_desc <- pf_med_code_desc |>
+  dplyr::bind_rows(top10_nonpf_med_code_desc)
 
-df_nonpf_med_counts <- df_med_count_results %>% 
-  filter(pharmacy_first_med == FALSE) %>%
-  arrange(desc(count))
-
-df_nonpf_med_counts <- df_nonpf_med_counts %>%
-  left_join(non_pf_med_dict, by = "code") %>%
-  mutate(term = coalesce(term.x, term.y)) %>%
-  select(-term.x, -term.y)
-
-df_pf_med_counts <- head(df_pf_med_counts,10)
-df_nonpf_med_counts <- head(df_nonpf_med_counts,10)
+df_pf_med_counts <- df_consultation_med_counts |>
+  select(numerator, code = dmd_code, pharmacy_first_med) |>
+  left_join(combined_med_code_desc, by = "code") |>
+  filter(numerator > 0) |>
+  select(-code) %>%
+  group_by(pharmacy_first_med, term) |>
+  summarise(count = sum(numerator, na.rm = TRUE)) |>
+  filter(!is.na(term)) %>%
+  ungroup() |>
+  group_by(pharmacy_first_med) |>
+  mutate(ratio_by_group = count / sum(count, na.na.rm = TRUE)) |>
+  slice_max(order_by = ratio_by_group, n = 5) |>
+  ungroup()
 
 tab_pf_med_counts <- df_pf_med_counts %>%
-  select(term, count) %>%
-  gt() %>%
+  arrange(!pharmacy_first_med) %>%
+  mutate(pharmacy_first_med = factor(pharmacy_first_med,
+  levels = c(FALSE, TRUE),
+  labels = c(("Medication not included in codelists"), "Medication included in codelists"))) %>%
+  group_by(pharmacy_first_med) %>%
+  gt(groupname_col = "pharmacy_first_med",
+  rowname_col = "term") %>%
   tab_header(
-    title = "Top Ten Pharmacy First Medication",
+    title = "Top 5 medications linked to Pharmacy First consultations",
     subtitle = "Timeframe: 1st Feb 2024 to 31st July 2024"
   ) %>%
   cols_label(
-    term = "Medication Description",
-    count = "Count"
+    term = md("**Medication**"),
+    count = md("**Count**"),
+    ratio_by_group = md("**%**")
   ) %>%
   fmt_number(
-    columns = everything(),
+    columns = count,
     decimals = 0
+  ) %>%
+  fmt_percent(
+    columns = ratio_by_group,
+    decimals = 1
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_row_groups(groups = everything())
+  ) %>% 
+  tab_stub_indent(
+    rows = everything(),
+    indent = 3
   )
 
-tab_pf_med_counts
-
-tab_nonpf_med_counts <- df_nonpf_med_counts %>%
-  select(term, count) %>%
-  gt() %>%
-  tab_header(
-    title = "Top Ten Non-Pharmacy First Medication",
-    subtitle = "Timeframe: 1st Feb 2024 to 31st July 2024"
-  ) %>%
-  cols_label(
-    term = "Medication Description",
-    count = "Count"
-  ) %>%
-  fmt_number(
-    columns = everything(),
-    decimals = 0
-  )
-
-tab_nonpf_med_counts
+gtsave(
+  tab_pf_med_counts,
+  here("reports", "resources", "tab_pf_med_counts.png"),
+)
 ```
 * Pharmacy First pathways (sinusitis, sore throat, otitis media, infected insect bites, impetigo, shingles, uncomplicated urinary tract infections)
