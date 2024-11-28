@@ -6,7 +6,7 @@ from ehrql.tables.tpp import (
 )
 from ehrql.tables.raw.tpp import medications
 
-from dataset_definition_med_status_data_development import (
+from codelists import (
     pharmacy_first_event_codes,
     pharmacy_first_med_codes,
 )
