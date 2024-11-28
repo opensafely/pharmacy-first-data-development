@@ -33,7 +33,7 @@ df_codes_count_summary <- read_csv(
   here(output_dir, "data_development", "pf_codes_count_summary.csv")
 )
 df_consultation_med_counts <- read_csv(
-  here(output_dir, "data_development", "consultation_med_counts_measures.csv"),
+  here(output_dir, "measures", "consultation_med_counts_measures.csv"),
   col_types = cols(dmd_code = col_character())
 )
 ```
