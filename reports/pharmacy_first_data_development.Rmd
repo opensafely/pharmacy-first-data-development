@@ -32,6 +32,10 @@ df_codes_count_measures <- read_csv(
 df_codes_count_summary <- read_csv(
   here(output_dir, "data_development", "pf_codes_count_summary.csv")
 )
+df_consultation_med_counts <- read_csv(
+  here(output_dir, "data_development", "consultation_med_counts_measures.csv"),
+  col_types = cols(dmd_code = col_character())
+)
 ```
 
 ## Methods
@@ -537,4 +541,96 @@ tab_pf_codes_count_summary
 # print(df_transposed_codes_summary)
 ```
 
+```{r, message=FALSE, warning=FALSE, echo = FALSE}
+
+codelist_file_names <- list.files(
+  here("codelists"),
+  pattern = "\\.csv$",
+  full.names = FALSE
+)
+
+code_descriptions <- here("codelists", codelist_file_names) |>
+  map(~ read_csv(.x, col_types = cols(
+    code = col_character()
+  ))) |>
+  bind_rows() |>
+  select(code, term) |>
+  distinct()
+
+df_med_count_results <- df_consultation_med_counts |>
+  select(numerator, code = dmd_code, pharmacy_first_med) |>
+  left_join(code_descriptions, by = "code") |>
+  filter(numerator > 0) |>
+    group_by(code, pharmacy_first_med, term) |>
+    summarise(
+      count = sum(numerator, na.rm = TRUE),
+      .groups = 'drop') |>
+    arrange(desc(code))
+
+non_pf_med_dict  <- tribble(
+  ~code, ~term,
+  "37388111000001102", "Macrobid 100mg modified-release capsules",
+  "531611000001106", "	Difflam 0.15% spray",
+  "3697711000001104", "EarCalm 2% spray",
+  "42533911000001101", "Coryen 27.5micrograms/dose nasal spray",
+  "623911000001105", "Hydrocortisone 1% cream",
+  "4530711000001104", "Covonia Sore Throat 0.2%/0.05% oromucosal spray menthol",
+  "42100111000001106", "Benzydamine 0.15% oromucosal spray sugar free",
+  "29311000001104", "Piriton 2mg/5ml syrup",
+  "17290311000001107", "Benzydamine 0.15% oromucosal spray sugar free",
+  "4648111000001108", "Robitussin Chesty Cough 100mg/5ml oral solution"
+)
+
+df_pf_med_counts <- df_med_count_results %>% 
+  filter(pharmacy_first_med == TRUE) %>%
+  arrange(desc(count))
+
+df_nonpf_med_counts <- df_med_count_results %>% 
+  filter(pharmacy_first_med == FALSE) %>%
+  arrange(desc(count))
+
+df_nonpf_med_counts <- df_nonpf_med_counts %>%
+  left_join(non_pf_med_dict, by = "code") %>%
+  mutate(term = coalesce(term.x, term.y)) %>%
+  select(-term.x, -term.y)
+
+df_pf_med_counts <- head(df_pf_med_counts,10)
+df_nonpf_med_counts <- head(df_nonpf_med_counts,10)
+
+tab_pf_med_counts <- df_pf_med_counts %>%
+  select(term, count) %>%
+  gt() %>%
+  tab_header(
+    title = "Top Ten Pharmacy First Medication",
+    subtitle = "Timeframe: 1st Feb 2024 to 31st July 2024"
+  ) %>%
+  cols_label(
+    term = "Medication Description",
+    count = "Count"
+  ) %>%
+  fmt_number(
+    columns = everything(),
+    decimals = 0
+  )
+
+tab_pf_med_counts
+
+tab_nonpf_med_counts <- df_nonpf_med_counts %>%
+  select(term, count) %>%
+  gt() %>%
+  tab_header(
+    title = "Top Ten Non-Pharmacy First Medication",
+    subtitle = "Timeframe: 1st Feb 2024 to 31st July 2024"
+  ) %>%
+  cols_label(
+    term = "Medication Description",
+    count = "Count"
+  ) %>%
+  fmt_number(
+    columns = everything(),
+    decimals = 0
+  )
+
+tab_nonpf_med_counts
+```
 * Pharmacy First pathways (sinusitis, sore throat, otitis media, infected insect bites, impetigo, shingles, uncomplicated urinary tract infections)
