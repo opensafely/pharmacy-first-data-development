@@ -16,6 +16,8 @@ library(gt)
 library(webshot2)
 library(janitor)
 library(httr)
+
+source(here("lib", "functions", "tables.R"))
 ```
 
 ```{r load-data, include=FALSE}
@@ -576,34 +578,8 @@ tab_pf_med_counts <- df_pf_med_counts %>%
   mutate(pharmacy_first_med = factor(pharmacy_first_med,
   levels = c(FALSE, TRUE),
   labels = c(("Medication not included in codelists"), "Medication included in codelists"))) %>%
-  group_by(pharmacy_first_med) %>%
-  gt(groupname_col = "pharmacy_first_med",
-  rowname_col = "term") %>%
-  tab_header(
-    title = "Top 5 medications linked to Pharmacy First consultations",
-    subtitle = "Timeframe: 1st Feb 2024 to 31st July 2024"
-  ) %>%
-  cols_label(
-    term = md("**Medication**"),
-    count = md("**Count**"),
-    ratio_by_group = md("**%**")
-  ) %>%
-  fmt_number(
-    columns = count,
-    decimals = 0
-  ) %>%
-  fmt_percent(
-    columns = ratio_by_group,
-    decimals = 1
-  ) %>%
-  tab_style(
-    style = cell_text(weight = "bold"),
-    locations = cells_row_groups(groups = everything())
-  ) %>% 
-  tab_stub_indent(
-    rows = everything(),
-    indent = 3
-  )
+  group_by(pharmacy_first_med) |>
+  gt_top_meds()
 
 gtsave(
   tab_pf_med_counts,
