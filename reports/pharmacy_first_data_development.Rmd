@@ -280,16 +280,23 @@ gtsave(
 tab_pf_med_status_counts
 ```
 
-### Validation 
+### Medication count validation 
 ```{r, message=FALSE, warning=FALSE, echo = FALSE}
-df_filtered <- read_csv(
+df_med_count_validation <- read_csv(
   (here("lib", "validation", "data", "eps_erd_prescribing_2024-02-01_to_2024-07-01.csv"))
 )
 
-eps_validation <- sum(df_filtered$eps_items, na.rm = TRUE) * 0.4
-erd_validation <- sum(df_filtered$erd_items, na.rm = TRUE) * 0.4
+tab_med_count_validation  <- df_med_count_validation %>%
+  pivot_longer(
+    cols = c(eps_items, erd_items),
+    names_to = "med_status",
+    values_to = "count"
+  ) %>%
+  mutate(count_40pct = round(count * .4, digits = 0)) %>%
+  group_by(med_status) %>%
+  summarise(post_nhsbsa_40pct = sum(count_40pct, na.rm = TRUE)) %>%
+  mutate(med_status = factor(med_status, levels = c("eps_items", "erd_items"), labels = c("0 - Normal", "8 - Repeat dispensed")))
 
-validation_any_values <- c(eps_validation, erd_validation)
 ```
 In order to validate that the number of medications that we see is as we expect, we will use the publicly available [Electronic Prescription Service (EPS) and electronic Repeat Dispensing (eRD) data](https://www.nhsbsa.nhs.uk/access-our-data-products/epact2/dashboards-and-specifications/electronic-prescription-service-eps-and-electronic-repeat-dispensing-erd-utilisation-dashboard) published by the NHSBSA as validation data. 
 The EPS and eRD data relate to the '0 - Normal' and '8 - Repeat dispensed' medication statuses from the table above. 
@@ -300,10 +307,10 @@ We expected to see roughly 40% of this overall data for the months we included i
 # Add new column which contains validation values
 df_filtered_med_status_counts <- df_tab_pf_med_status_counts %>%
   filter(med_status %in% c("0 - Normal", "8 - Repeat dispensed")) %>%
-  mutate(comparison_value = validation_any_values)
+  left_join(tab_med_count_validation)
 
 tab_any_validation <- df_filtered_med_status_counts %>%
-  select(med_status, post_anymed, comparison_value) %>%
+  select(med_status, post_anymed, post_nhsbsa_40pct) %>%
   gt() %>%
   tab_header(
     title = "Comparison of EPS and ERD values to public (validation) data",
@@ -312,15 +319,15 @@ tab_any_validation <- df_filtered_med_status_counts %>%
   cols_label(
     med_status = "Med Status",
     post_anymed = "Any Medication",
-    comparison_value = "Medication (Validation)"
+    post_nhsbsa_40pct = "Medication (Validation)"
   ) %>%
   fmt_number(
-    columns = vars(post_anymed, comparison_value),
+    columns = vars(post_anymed, post_nhsbsa_40pct),
     decimals = 0
   ) %>%
   tab_footnote(
     footnote = "40% of data taken from NHSBSA EPS and eRD dispensing data - July 2024",
-    locations = cells_column_labels(columns = c(comparison_value))
+    locations = cells_column_labels(columns = c(post_nhsbsa_40pct))
   )
 # Display the table for validation of 'any medication'
 tab_any_validation
