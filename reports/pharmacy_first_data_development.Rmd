@@ -286,10 +286,10 @@ df_filtered <- read_csv(
   (here("lib", "validation", "data", "eps_erd_prescribing_2024_feb.csv"))
 )
 
-eps_validation = sum(df_filtered$eps_items) * 0.4
-erd_validation = sum(df_filtered$erd_items) * 0.4
+eps_validation <- sum(df_filtered$eps_items) * 0.4
+erd_validation <- sum(df_filtered$erd_items) * 0.4
 
-validation_any_values = c(eps_validation, erd_validation)
+validation_any_values <- c(eps_validation, erd_validation)
 ```
 In order to validate that the number of medications that we see is as we expect, we will use the publicly available [Electronic Prescription Service (EPS) and electronic Repeat Dispensing (eRD) data](https://www.nhsbsa.nhs.uk/access-our-data-products/epact2/dashboards-and-specifications/electronic-prescription-service-eps-and-electronic-repeat-dispensing-erd-utilisation-dashboard) published by the NHSBSA as validation data. 
 The EPS and eRD data relate to the '0 - Normal' and '8 - Repeat dispensed' medication statuses from the table above. 
@@ -297,7 +297,6 @@ The EPS and eRD data relate to the '0 - Normal' and '8 - Repeat dispensed' medic
 We expected to see roughly 40% of this overall data for the months we included in our study, as shown in the table below:
 
 ```{r, message=FALSE, warning=FALSE, echo = FALSE}
-
 # Add new column which contains validation values
 df_filtered_med_status_counts <- df_tab_pf_med_status_counts %>%
   filter(med_status %in% c("0 - Normal", "8 - Repeat dispensed")) %>%
@@ -325,8 +324,6 @@ tab_any_validation <- df_filtered_med_status_counts %>%
   )
 # Display the table for validation of 'any medication'
 tab_any_validation
-
-
 ```
 
 ## Pharmacy First consultation codes
@@ -510,7 +507,8 @@ tab_pf_codes_count_summary <- df_pivot_codes_count_summary %>%
     locations = cells_column_labels(columns = c(post_pfid))
   ) %>%
   tab_header(
-    title = md("**Descriptive statistics for clinical events related to Pharmacy First services**"))
+    title = md("**Descriptive statistics for clinical events related to Pharmacy First services**")
+  )
 
 gtsave(
   tab_pf_codes_count_summary,
@@ -525,7 +523,6 @@ tab_pf_codes_count_summary
 ```
 
 ```{r, message=FALSE, warning=FALSE, echo = FALSE}
-
 codelist_file_names <- list.files(
   here("codelists"),
   pattern = "\\.csv$",
@@ -540,7 +537,7 @@ pf_med_code_desc <- here("codelists", codelist_file_names) |>
   select(code, term) |>
   distinct()
 
-top10_nonpf_med_code_desc  <- tribble(
+top10_nonpf_med_code_desc <- tribble(
   ~code, ~term,
   "37388111000001102", "Macrobid 100mg modified-release capsules",
   "531611000001106", "Difflam 0.15% spray",
@@ -574,11 +571,14 @@ df_pf_med_counts <- df_consultation_med_counts |>
 tab_pf_med_counts <- df_pf_med_counts %>%
   arrange(!pharmacy_first_med) %>%
   mutate(pharmacy_first_med = factor(pharmacy_first_med,
-  levels = c(FALSE, TRUE),
-  labels = c(("Medication not included in codelists"), "Medication included in codelists"))) %>%
+    levels = c(FALSE, TRUE),
+    labels = c(("Medication not included in codelists"), "Medication included in codelists")
+  )) %>%
   group_by(pharmacy_first_med) %>%
-  gt(groupname_col = "pharmacy_first_med",
-  rowname_col = "term") %>%
+  gt(
+    groupname_col = "pharmacy_first_med",
+    rowname_col = "term"
+  ) %>%
   tab_header(
     title = "Top 5 medications linked to Pharmacy First consultations",
     subtitle = "Timeframe: 1st Feb 2024 to 31st July 2024"
@@ -599,7 +599,7 @@ tab_pf_med_counts <- df_pf_med_counts %>%
   tab_style(
     style = cell_text(weight = "bold"),
     locations = cells_row_groups(groups = everything())
-  ) %>% 
+  ) %>%
   tab_stub_indent(
     rows = everything(),
     indent = 3
