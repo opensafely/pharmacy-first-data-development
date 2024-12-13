@@ -283,11 +283,11 @@ tab_pf_med_status_counts
 ### Validation 
 ```{r, message=FALSE, warning=FALSE, echo = FALSE}
 df_filtered <- read_csv(
-  (here("lib", "validation", "data", "eps_erd_prescribing_2024_feb.csv"))
+  (here("lib", "validation", "data", "eps_erd_prescribing_2024-02-01_to_2024-07-01.csv"))
 )
 
-eps_validation <- sum(df_filtered$eps_items) * 0.4
-erd_validation <- sum(df_filtered$erd_items) * 0.4
+eps_validation <- sum(df_filtered$eps_items, na.rm = TRUE) * 0.4
+erd_validation <- sum(df_filtered$erd_items, na.rm = TRUE) * 0.4
 
 validation_any_values <- c(eps_validation, erd_validation)
 ```
