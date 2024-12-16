@@ -15,14 +15,14 @@ print("Load data successfully")
 # Removing the leading "_" using `stringr::str_sub` isnt elegant but I dont know
 # how to do this using regex.
 df_tmp <- df_tmp %>%
-dplyr::select(
-  pre_all_count_pf_pathways,
-  pre_pfid_count_pf_pathways,
-  pre_pfdate_count_pf_pathways,
-  post_all_count_pf_pathways,
-  post_pfid_count_pf_pathways,
-  post_pfdate_count_pf_pathways
-) %>%
+  dplyr::select(
+    pre_all_count_pf_pathways,
+    pre_pfid_count_pf_pathways,
+    pre_pfdate_count_pf_pathways,
+    post_all_count_pf_pathways,
+    post_pfid_count_pf_pathways,
+    post_pfdate_count_pf_pathways
+  ) %>%
   tidyr::pivot_longer(
     cols = c(
       "pre_all_count_pf_pathways",

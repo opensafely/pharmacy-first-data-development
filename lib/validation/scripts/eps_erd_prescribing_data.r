@@ -28,6 +28,9 @@ df <- read_xlsx_from_url(
 
 df_filtered <- df %>%
   select(month, region_code, practice_code, eps_items, erd_items) %>%
-  filter(month %in% c(202402, 202403, 202404, 202405, 202406, 202407))
+  filter(month %in% c(202402, 202403, 202404, 202405, 202406, 202407)) %>%
+  mutate(month = ym(month))
 
-df_filtered |> write_csv(here("lib", "validation", "data", "eps_erd_prescribing_2024_feb.csv"))
+df_filtered |> write_csv(
+  here("lib", "validation", "data", "eps_erd_prescribing_2024-02-01_to_2024-07-01.csv")
+)
