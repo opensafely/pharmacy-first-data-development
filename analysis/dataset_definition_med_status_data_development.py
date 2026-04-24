@@ -16,6 +16,7 @@ pharmacy_first_launch_date = date(2024, 2, 1)
 
 # Time interval for selecting medications pre and post Pharmacy First launch date
 time_interval = months(6)
+pf_period = months(25)
 
 pharmacy_first_ids = clinical_events.where(
     clinical_events.snomedct_code.is_in(pharmacy_first_event_codes)
@@ -96,7 +97,7 @@ selected_medications_any_post = medications.where(
 selected_medications_pfmed_post = (
     medications.where(
         medications.date.is_on_or_between(
-            pharmacy_first_launch_date, pharmacy_first_launch_date + time_interval
+            pharmacy_first_launch_date, pharmacy_first_launch_date + pf_period
         )
     )
     .where(medications.dmd_code.is_in(pharmacy_first_med_codes))
@@ -108,7 +109,7 @@ selected_medications_pfmed_post = (
 selected_medications_pfmed_pfid_post = (
     medications.where(
         medications.date.is_on_or_between(
-            pharmacy_first_launch_date, pharmacy_first_launch_date + time_interval
+            pharmacy_first_launch_date, pharmacy_first_launch_date + pf_period
         )
     )
     .where(medications.dmd_code.is_in(pharmacy_first_med_codes))
@@ -120,7 +121,7 @@ selected_medications_pfmed_pfid_post = (
 selected_medications_anymed_pfid_post = (
     medications.where(
         medications.date.is_on_or_between(
-            pharmacy_first_launch_date, pharmacy_first_launch_date + time_interval
+            pharmacy_first_launch_date, pharmacy_first_launch_date + pf_period
         )
     )
     .where(medications.consultation_id.is_in(pharmacy_first_ids))
@@ -131,7 +132,7 @@ selected_medications_anymed_pfid_post = (
 selected_medications_pfdate_pfid_post = (
     medications.where(
         medications.date.is_on_or_between(
-            pharmacy_first_launch_date, pharmacy_first_launch_date + time_interval
+            pharmacy_first_launch_date, pharmacy_first_launch_date + pf_period
         )
     )
     .where(medications.consultation_id.is_in(pharmacy_first_ids))
@@ -156,7 +157,7 @@ selected_medications_pfmed_pfdate_pre = (
 selected_medications_pfmed_pfdate_post = (
     medications.where(
         medications.date.is_on_or_between(
-            pharmacy_first_launch_date, pharmacy_first_launch_date + time_interval
+            pharmacy_first_launch_date, pharmacy_first_launch_date + pf_period
         )
     )
     .where(medications.dmd_code.is_in(pharmacy_first_med_codes))
@@ -180,7 +181,7 @@ selected_medications_anymed_pfdate_pre = (
 selected_medications_anymed_pfdate_post = (
     medications.where(
         medications.date.is_on_or_between(
-            pharmacy_first_launch_date, pharmacy_first_launch_date + time_interval
+            pharmacy_first_launch_date, pharmacy_first_launch_date + pf_period
         )
     )
     .where(medications.date.is_in(pharmacy_first_dates))
