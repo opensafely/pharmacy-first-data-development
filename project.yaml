@@ -87,3 +87,11 @@ actions:
     outputs:
       moderately_sensitive:
         measure: output/measures/consultation_med_counts_measures.csv
+
+  generate_med_status_counts_measures:
+    run: >
+      ehrql:v1 generate-measures analysis/measures_med_status_counts.py
+      --output output/measures/measures_med_status_counts.csv
+    outputs:
+      moderately_sensitive:
+        measure: output/measures/measures_med_status_counts.csv

@@ -210,8 +210,8 @@ df_tab_pf_med_status_counts <- df_med_status_counts %>%
   ) %>%
   select(
     med_status,
-    post_anymed, post_anypfid, post_anypfdate,
-    post_pfmed, post_pfmedid, post_pfmedpfdate
+    post_anymed, post_anypfid,
+    post_pfmed, post_pfmedid,
   )
 
 # Display data frame as table
@@ -227,10 +227,8 @@ tab_pf_med_status_counts <- df_tab_pf_med_status_counts %>%
     columns = c(
       post_anymed,
       post_anypfid,
-      post_anypfdate,
       post_pfmed,
       post_pfmedid,
-      post_pfmedpfdate
     ),
     decimals = 0
   ) %>%
@@ -246,10 +244,8 @@ tab_pf_med_status_counts <- df_tab_pf_med_status_counts %>%
     med_status = md("**Medication status**"),
     post_anymed = "All",
     post_anypfid = "PF ID",
-    post_anypfdate = "Same Day",
     post_pfmed = "All",
     post_pfmedid = "PF ID",
-    post_pfmedpfdate = "Same Day"
   ) %>%
   cols_align(
     align = "left",
@@ -262,10 +258,6 @@ tab_pf_med_status_counts <- df_tab_pf_med_status_counts %>%
   tab_footnote(
     footnote = "Medications with Pharmacy First consultation ID.",
     locations = cells_column_labels(columns = c(post_anypfid, post_pfmedid))
-  ) %>%
-  tab_footnote(
-    footnote = "Medications prescribed on the same day as a Pharmacy First consultation ID.",
-    locations = cells_column_labels(columns = c(post_anypfdate, post_pfmedpfdate))
   ) %>%
   tab_header(
     title = md("**Breakdown of medication status for Pharmacy First service**"),
@@ -332,289 +324,3 @@ tab_any_validation <- df_filtered_med_status_counts %>%
 # Display the table for validation of 'any medication'
 tab_any_validation
 ```
-
-## Pharmacy First consultation codes
-
-We extracted the consultation IDs associated with consultations that used pharmacy first event SNOMED codes from the clinical events dataset.
-We then visualised the total counts of consultation IDs linked to Pharmacy First, followed by a breakdown across individual clinical services to assess changes in consultation frequency after the Pharmacy First launch. The primary objective of this analysis was to establish evidence that consultations linked with Pharmacy First events could reliably serve as 'Pharmacy First consultations' in future studies.
-
-To provide further insight, consultation ID counts were segmented by clinical service. As these services were in use prior to the Pharmacy First launch, examining background levels and regional patterns allows us to assess their pre-launch usage and identify any post-launch increase, acknowledging that different regions may exhibit varied coding behaviours.
-
-```{r, fig.height=5, fig.width=8, echo = FALSE, warning=FALSE}
-# Read the CSV file
-plot_code_counts <- df_codes_count_measures %>%
-  group_by(measure, interval_end) %>%
-  mutate(
-    numerator_total = sum(numerator, na.rm = TRUE),
-    denominator_total = sum(denominator, na.rm = TRUE),
-    measure = factor(measure, levels = pf_consultation_label, labels = pf_consultation_label_desc),
-  ) %>%
-  select(measure, interval_end, numerator_total, denominator_total) %>%
-  filter(measure %in% pf_consultation_label_desc) %>%
-  distinct() %>%
-  ggplot(aes(
-    x = interval_end,
-    y = numerator_total,
-    colour = measure,
-    shape = measure,
-  )) +
-  geom_point(size = 2) +
-  geom_line(alpha = .3) +
-  labs(
-    title = NULL,
-    x = NULL,
-    y = "Total count",
-    colour = NULL,
-    shape = NULL
-  ) +
-  scale_y_continuous(
-    labels = scales::label_number(),
-  ) +
-  theme(legend.position = "bottom") +
-  guides(
-    colour = guide_legend(ncol = 2),
-    shape = guide_legend(ncol = 2)
-  ) +
-  scale_x_date(
-    date_breaks = "1 month",
-    labels = scales::label_date_short()
-  ) +
-  geom_vline(
-    xintercept = lubridate::as_date(c(
-      "2024-01-31"
-    )),
-    linetype = "dotted",
-    colour = "orange",
-    size = .7
-  ) +
-  scale_colour_viridis_d(end = .75)
-
-ggsave(
-  here("reports", "resources", "plot_code_counts.png"),
-  plot_code_counts,
-  height = 5,
-  width = 8
-)
-
-plot_code_counts
-```
-
-```{r, fig.height=10, fig.width=8, echo = FALSE, warning=FALSE}
-# Read the CSV file
-
-# Process data frame
-plot_code_counts_region <- df_codes_count_measures %>%
-  replace_na(list(practice_region = "(Missing)")) %>%
-  mutate(
-    measure = factor(measure, levels = pf_consultation_label, labels = pf_consultation_label_desc),
-    practice_region = fct_relevel(practice_region, "(Missing)", after = Inf)
-  ) %>%
-  filter(measure %in% pf_consultation_label_desc) %>%
-  ggplot(aes(
-    x = interval_end,
-    y = ratio,
-    colour = practice_region,
-  )) +
-  geom_point() +
-  geom_line(alpha = .3) +
-  labs(
-    title = NULL,
-    x = NULL,
-    y = "Ratio of counts",
-    colour = NULL
-  ) +
-  scale_y_continuous(
-    labels = scales::label_percent(),
-  ) +
-  facet_wrap(~measure,
-    scales = "free_y",
-    ncol = 1
-  ) +
-  scale_colour_brewer(palette = "Set1", na.value = "#000000") +
-  theme(legend.position = "bottom") +
-  scale_x_date(
-    date_breaks = "1 month",
-    labels = scales::label_date_short()
-  ) +
-  geom_vline(
-    xintercept = lubridate::as_date(c(
-      "2024-01-31"
-    )),
-    linetype = "dotted",
-    colour = "orange",
-    size = .7
-  )
-
-ggsave(
-  here("reports", "resources", "plot_code_counts_region.png"),
-  plot_code_counts_region,
-  height = 12,
-  width = 8
-)
-
-plot_code_counts_region
-```
-
-### Pharmacy First counts summary
-
-The table below summarises the total count of clinical events (sourced from the clinical events dataset) before and after the Pharmacy First launch. This summary provides a visual representation of the rise in Pharmacy First events since the launch, as well as clinical events concerning conditions linked to Pharmacy First pathways. Additionally, further breakdowns include counts of clinical events occurring on the same day as a Pharmacy First consultation, and those with a Pharmacy First consultation ID, to identify potential instances of missing Pharmacy First clinical events. 
-
-```{r, message=FALSE, warning=FALSE, echo = FALSE}
-df_pivot_codes_count_summary <- df_codes_count_summary %>%
-  pivot_wider(names_from = c(time, selected_events), values_from = count) %>%
-  mutate(
-    summary_stat = factor(
-      summary_stat,
-      levels = summary_stat_label,
-      labels = summary_stat_label_desc
-    )
-  ) %>%
-  select(summary_stat, post_all, post_pfdate, post_pfid) %>%
-  relocate(
-    summary_stat,
-    post_all, post_pfdate, post_pfid
-  )
-
-# Display data frame as table
-tab_pf_codes_count_summary <- df_pivot_codes_count_summary %>%
-  gt() %>%
-  sub_missing(
-    columns = everything(),
-    rows = everything(),
-    missing_text = "---"
-  ) %>%
-  fmt_number(
-    columns = c(
-      post_all,
-      post_pfdate,
-      post_pfid
-    ),
-    decimals = 0
-  ) %>%
-  cols_label(
-    summary_stat = "Summary Statistic",
-    post_all = "Any event",
-    post_pfdate = "Same day as PF event",
-    post_pfid = "Same ID as PF event"
-  ) %>%
-  cols_align(
-    align = "left",
-    columns = summary_stat
-  ) %>%
-  tab_footnote(
-    footnote = "Total number of distinct consultation IDs.",
-    locations = cells_column_labels(columns = c(post_all))
-  ) %>%
-  tab_footnote(
-    footnote = "Clinical events taking place on the same day as a Pharmacy First consultation.",
-    locations = cells_column_labels(columns = c(post_pfdate))
-  ) %>%
-  tab_footnote(
-    footnote = "Clinical events with a Pharmacy First consultation ID.",
-    locations = cells_column_labels(columns = c(post_pfid))
-  ) %>%
-  tab_header(
-    title = md("**Descriptive statistics for clinical events related to Pharmacy First services**")
-  )
-
-gtsave(
-  tab_pf_codes_count_summary,
-  here("reports", "resources", "tab_pf_codes_count_summary.png"),
-)
-
-tab_pf_codes_count_summary
-
-# Alternative way of presenting summary table
-# df_transposed_codes_summary <- t(df_pivot_codes_count_summary)
-# print(df_transposed_codes_summary)
-```
-
-```{r, message=FALSE, warning=FALSE, echo = FALSE}
-codelist_file_names <- list.files(
-  here("codelists"),
-  pattern = "\\.csv$",
-  full.names = FALSE
-)
-
-pf_med_code_desc <- here("codelists", codelist_file_names) |>
-  map(~ read_csv(.x, col_types = cols(
-    code = col_character()
-  ))) |>
-  bind_rows() |>
-  select(code, term) |>
-  distinct()
-
-top10_nonpf_med_code_desc <- tribble(
-  ~code, ~term,
-  "37388111000001102", "Macrobid 100mg modified-release capsules",
-  "531611000001106", "Difflam 0.15% spray",
-  "3697711000001104", "EarCalm 2% spray",
-  "42533911000001101", "Coryen 27.5micrograms/dose nasal spray",
-  "623911000001105", "Hydrocortisone 1% cream",
-  "4530711000001104", "Covonia Sore Throat 0.2%/0.05% oromucosal spray menthol",
-  "42100111000001106", "Benzydamine 0.15% oromucosal spray sugar free",
-  "29311000001104", "Piriton 2mg/5ml syrup",
-  "17290311000001107", "Benzydamine 0.15% oromucosal spray sugar free",
-  "4648111000001108", "Robitussin Chesty Cough 100mg/5ml oral solution"
-)
-
-combined_med_code_desc <- pf_med_code_desc |>
-  dplyr::bind_rows(top10_nonpf_med_code_desc)
-
-df_pf_med_counts <- df_consultation_med_counts |>
-  select(numerator, code = dmd_code, pharmacy_first_med) |>
-  left_join(combined_med_code_desc, by = "code") |>
-  filter(numerator > 0) |>
-  select(-code) %>%
-  group_by(pharmacy_first_med, term) |>
-  summarise(count = sum(numerator, na.rm = TRUE)) |>
-  filter(!is.na(term)) %>%
-  ungroup() |>
-  group_by(pharmacy_first_med) |>
-  mutate(ratio_by_group = count / sum(count, na.na.rm = TRUE)) |>
-  slice_max(order_by = ratio_by_group, n = 5) |>
-  ungroup()
-
-tab_pf_med_counts <- df_pf_med_counts %>%
-  arrange(!pharmacy_first_med) %>%
-  mutate(pharmacy_first_med = factor(pharmacy_first_med,
-    levels = c(FALSE, TRUE),
-    labels = c(("Medication not included in codelists"), "Medication included in codelists")
-  )) %>%
-  group_by(pharmacy_first_med) %>%
-  gt(
-    groupname_col = "pharmacy_first_med",
-    rowname_col = "term"
-  ) %>%
-  tab_header(
-    title = "Top 5 medications linked to Pharmacy First consultations",
-    subtitle = "Timeframe: 1st Feb 2024 to 31st July 2024"
-  ) %>%
-  cols_label(
-    term = md("**Medication**"),
-    count = md("**Count**"),
-    ratio_by_group = md("**%**")
-  ) %>%
-  fmt_number(
-    columns = count,
-    decimals = 0
-  ) %>%
-  fmt_percent(
-    columns = ratio_by_group,
-    decimals = 1
-  ) %>%
-  tab_style(
-    style = cell_text(weight = "bold"),
-    locations = cells_row_groups(groups = everything())
-  ) %>%
-  tab_stub_indent(
-    rows = everything(),
-    indent = 3
-  )
-
-gtsave(
-  tab_pf_med_counts,
-  here("reports", "resources", "tab_pf_med_counts.png"),
-)
-```
-* Pharmacy First pathways (sinusitis, sore throat, otitis media, infected insect bites, impetigo, shingles, uncomplicated urinary tract infections)
