@@ -6,6 +6,10 @@ measures.configure_dummy_data(population_size=10000)
 
 # Dictionary of pharmacy first codes
 pharmacy_first_event_codes = {
+    # Blood Pressure Check Service (1659111000000107)
+    "blood_pressure_service": ["1659111000000107"],
+    # Contraception service (1659121000000101)
+    "contraception_service": ["1659121000000101"],
     # Community Pharmacist (CP) Consultation Service for minor illness (procedure)
     "consultation_service": ["1577041000000109"],
     # Pharmacy First service (qualifier value)
@@ -29,7 +33,7 @@ for code_desc, code in pharmacy_first_event_codes.items():
     pharmacy_first_code_counts[f"count_{code_desc}"] = count_codes_query
 
 # Define intervals and measures
-intervals = months(18).starting_on("2023-02-01")
+intervals = months(37).starting_on("2023-02-01")
 
 for measures_name, code_counts in pharmacy_first_code_counts.items():
     measures.define_measure(
