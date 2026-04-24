@@ -122,9 +122,9 @@ test_data = {
             "post_all_count_pf_events": 2,
             "post_pfid_count_pf_events": 2,
             "post_pfdate_count_pf_events": 2,
-            "post_all_count_pf_pathways": 2,
+            "post_all_count_pf_pathways": 3,
             "post_pfid_count_pf_pathways": 1,
-            "post_pfdate_count_pf_pathways": 3,
+            "post_pfdate_count_pf_pathways": 2,
         },
     },
 }
