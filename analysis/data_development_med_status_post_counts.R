@@ -3,18 +3,19 @@ library(arrow)
 library(dplyr)
 
 selected_variables_list <- list(
-  "post_anymed" <- paste0("post_anymed_", paste0("status", 0:28)),
-  "post_anypfid" <- paste0("post_anypfid_", paste0("status", 0:28)),
-  "post_anypfdate" <- paste0("post_anypfdate_", paste0("status", 0:28)),
-  "post_pfmed" <- paste0("post_pfmed_", paste0("status", 0:28)),
-  "post_pfmedid" <- paste0("post_pfmedid_", paste0("status", 0:28)),
-  "post_pfmedpfdate" <- paste0("post_pfmedpfdate_", paste0("status", 0:28))
+  post_anymed = paste0("post_anymed_", paste0("status", c(0:5, 7:28))),
+  post_anypfid = paste0("post_anypfid_", paste0("status", c(0:5, 7:28))),
+  post_anypfdate = paste0("post_anypfdate_", paste0("status", c(0:5, 7:28))),
+  post_pfmed = paste0("post_pfmed_", paste0("status", c(0:5, 7:28))),
+  post_pfmedid = paste0("post_pfmedid_", paste0("status", c(0:5, 7:28))),
+  post_pfmedpfdate = paste0("post_pfmedpfdate_", paste0("status", c(0:5, 7:28)))
 )
 
 # Load data
 df_med_status <- arrow::read_feather(
   here::here("output", "data_development", "med_status_data_development.arrow")
-) %>% select(all_of(unlist(selected_variables_list)))
+) %>%
+  dplyr::select(-dplyr::matches("status6$"))
 
 print("Load data successfully")
 
