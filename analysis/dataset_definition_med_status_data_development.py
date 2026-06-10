@@ -207,6 +207,8 @@ selected_medications_dict = {
 # This will add 6 x 28 = 168 new columns
 for desc, selected_medications in selected_medications_dict.items():
     for status in range(29):
+        if status == 6:
+            continue
         count_med_status_query = selected_medications.where(
             selected_medications.medication_status.is_in([status])
         ).count_for_patient()
