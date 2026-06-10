@@ -3,23 +3,26 @@ library(arrow)
 library(dplyr)
 
 selected_variables_list <- list(
-  "pre_anymed" <- paste0("pre_anymed_", paste0("status", 0:28)),
-  "pre_anypfid" <- paste0("pre_anypfid_", paste0("status", 0:28)),
-  "pre_anypfdate" <- paste0("pre_anypfdate_", paste0("status", 0:28)),
-  "pre_pfmed" <- paste0("pre_pfmed_", paste0("status", 0:28)),
-  "pre_pfmedid" <- paste0("pre_pfmedid_", paste0("status", 0:28)),
-  "pre_pfmedpfdate" <- paste0("pre_pfmedpfdate_", paste0("status", 0:28))
+  pre_anymed = paste0("pre_anymed_", paste0("status", c(0:5, 7:28))),
+  pre_anypfid = paste0("pre_anypfid_", paste0("status", c(0:5, 7:28))),
+  pre_anypfdate = paste0("pre_anypfdate_", paste0("status", c(0:5, 7:28))),
+  pre_pfmed = paste0("pre_pfmed_", paste0("status", c(0:5, 7:28))),
+  pre_pfmedid = paste0("pre_pfmedid_", paste0("status", c(0:5, 7:28))),
+  pre_pfmedpfdate = paste0("pre_pfmedpfdate_", paste0("status", c(0:5, 7:28)))
 )
 
 # Load data
+expected <- unlist(selected_variables_list)
+
 df_med_status <- arrow::read_feather(
   here::here("output", "data_development", "med_status_data_development.arrow")
-) %>% select(all_of(unlist(selected_variables_list)))
+) %>%
+  dplyr::select(-dplyr::matches("status6$"))
 
 print("Load data successfully")
 
 # Check that all names defined in data_extractions are in df df_med_status
-# all(unlist(selected_variables_list) %in% names(df_med_status))
+#all(unlist(selected_variables_list) %in% names(df_med_status))
 
 print("Define variable names successfully")
 
