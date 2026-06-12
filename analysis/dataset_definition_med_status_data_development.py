@@ -89,7 +89,7 @@ selected_medications_pfdate_pfid_pre = (
 # Post launch, any medication
 selected_medications_any_post = medications.where(
     medications.date.is_on_or_between(
-        pharmacy_first_launch_date, pharmacy_first_launch_date + time_interval
+        pharmacy_first_launch_date, pharmacy_first_launch_date + pf_period
     )
 ).sort_by(medications.date)
 
