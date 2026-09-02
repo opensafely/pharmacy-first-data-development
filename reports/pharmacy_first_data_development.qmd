@@ -1,0 +1,657 @@
+---
+title: "Pharmacy First Data Development Report"
+subtitle: "Short Data Report"
+authors:
+  - name: Viveck Kingsley
+    affiliations: 
+        name: "University of Oxford"
+        department: "Nuffield Department of Primary Care Health Sciences"
+        group: "Bennett Institute for Applied Data Science"
+        orcid: 0009-0003-0864-7132
+        email: viveck.kingsley@phc.ox.ac.uk
+  - name: Milan Wiedemann
+    affiliations: 
+        name: "University of Oxford"
+        department: "Nuffield Department of Primary Care Health Sciences"
+        group: "Bennett Institute for Applied Data Science"
+        orcid: 0000-0003-1991-282X
+        email: milan.wiedemann@phc.ox.ac.uk
+  - name: Christopher Wood
+    affiliations: 
+        name: "University of Oxford"
+        department: "Nuffield Department of Primary Care Health Sciences"
+        group: "Bennett Institute for Applied Data Science"
+        orcid: 0000-0001-5184-0606
+        email: christopher.wood@phc.ox.ac.uk
+  - name: Helen J Curtis
+    affiliations: 
+        name: "University of Oxford"
+        department: "Nuffield Department of Primary Care Health Sciences"
+        group: "Bennett Institute for Applied Data Science"
+        orcid: 0000-0003-3429-9576
+        email: helen.curtis@phc.ox.ac.uk
+  - name: Louis Fisher
+    affiliations: 
+        name: "University of Oxford"
+        department: "Nuffield Department of Primary Care Health Sciences"
+        group: "Bennett Institute for Applied Data Science"
+        orcid: 0000-0002-0295-3812
+        email: louis.fisher@phc.ox.ac.uk
+  - name: Millie Green
+    affiliations: 
+        name: "University of Oxford"
+        department: "Nuffield Department of Primary Care Health Sciences"
+        group: "Bennett Institute for Applied Data Science"
+        orcid: 0000-0002-7246-2074
+        email: amelia.green@phc.ox.ac.uk
+  - name: Brian MacKenna
+    affiliations: 
+        name: "University of Oxford"
+        department: "Nuffield Department of Primary Care Health Sciences"
+        group: "Bennett Institute for Applied Data Science"
+        orcid: 0000-0002-3786-906
+        email: brian.mackenna@phc.ox.ac.uk
+echo: false
+warning: false
+format:
+  html:
+    code-fold: true
+  docx:
+    reference-doc: ../publish/reference.docx
+filters:
+  - ../publish/docx-format.lua
+---
+
+```{r}
+# load libraries and csvs
+library(tidyverse)
+library(here)
+library(gt)
+library(paletteer)
+
+output_dir <- "released_output"
+df_med_status_counts <- read_csv(
+  here(output_dir, "data_development", "med_status_counts.csv")
+)
+df_codes_count_measures <- read_csv(
+  here(output_dir, "clinical_codes", "code_counts_measures.csv")
+)
+df_med_status_measures <- read_csv(
+  here(output_dir, "measures", "measures_med_status_counts.csv")
+)
+df_bsa_validation <- read_csv(
+  here("lib", "validation", "data", "df_bsa_validation_full.csv")
+)
+```
+
+```{r}
+# Medication status labels and descriptions
+med_status_label <- paste0("status", 0:28)
+med_status_label2 <- as.character(0:28)
+
+med_status_label_desc <- c(
+  "0 - Normal",
+  NA_character_,
+  NA_character_,
+  NA_character_,
+  "4 - Historical",
+  "5 - Blue script",
+  "6 - Private",
+  "7 - Not in possession",
+  "8 - Repeat dispensed",
+  "9 - In possession",
+  "10 - Dental",
+  "11 - Hospital",
+  "12 - Problem substance",
+  "13 - From patient group direction",
+  "14 - To take out",
+  "15 - On admission",
+  "16 - Regular medication",
+  "17 - As required medication",
+  "18 - Variable dose medication",
+  "19 - Rate-controlled single regular",
+  "20 - Only once",
+  "21 - Outpatient",
+  "22 - Rate-controlled multiple regular",
+  "23 - Rate-controlled multiple only once",
+  "24 - Rate-controlled single only once",
+  "25 - Placeholder",
+  "26 - Unconfirmed",
+  "27 - Infusion",
+  "28 - Reducing dose blue script"
+)
+
+# Pharmacy first codes
+pharmacy_consultation_label <- c(
+  "count_blood_pressure_service",
+  "count_contraception_service",
+  "count_consultation_service",
+  "count_pharmacy_first_service"
+)
+
+pharmacy_consultation_label_desc <- c(
+  "Blood Pressure Check Service (1659111000000107)",
+  "Contraception Service (1659121000000101)",
+  "Consultation Service for minor illness (1577041000000109)",
+  "Pharmacy First service (983341000000102)"
+)
+
+summary_stat_label <- c(
+  "count_distinct_ids",
+  "count_pf_events",
+  "count_pf_pathways"
+)
+
+summary_stat_label_desc <- c(
+  "Count of all events",
+  "Count of PF events",
+  "Count of all PF pathways"
+)
+```
+
+# Background and purpose
+
+Primary care electronic health record (EHR) data increasingly include information about care delivered outside traditional general practice (GP) consultations, including activity delivered by community pharmacies. 
+
+The introduction of structured data-sharing mechanisms, including GP Connect: Update Record [REF], has enabled information from community pharmacy services to be transferred directly into GP records. As a result, consultation records generated outside general practice can now appear alongside traditional GP-generated activity within primary care EHR data. Understanding how this activity appears in GP records is important for interpreting analyses that use GP data to study service delivery, uptake, and patterns of care.
+
+Community pharmacy services provide a useful case study for examining how non-GP activity is recorded in GP records. Recent pharmacy service developments, including Pharmacy First, blood pressure check services, and contraception services generate consultation records that may be transmitted to GP systems through a combination of structured and non-structured recording processes. However, the completeness and consistency of this recording remains uncertain. 
+
+In addition to consultation activity, medications supplied through non-GP services may also be recorded in GP systems. Medication records contain status fields that describe how medications entered the GP record, potentially providing information about whether medicines originated within or outside general practice. The extent to which these status fields can be used to identify medications associated with externally delivered care has not been well described. 
+
+This report aims to characterise how community pharmacy-delivered services are represented within GP electronic health records. Specifically, we examine consultation activity associated with pharmacy services, assess the completeness of activity captured in GP records through comparison with national statistics, and investigate how medications associated with pharmacy consultations are recorded. Through this work, we use pharmacy services as an example to explore the broader challenge of identifying and interpreting non-GP activity within primary care EHR data. 
+
+# Pharmacy consultation activity in GP records
+
+To investigate how non-GP activity is represented within GP electronic health records, we identified SNOMED CT codes associated with three community pharmacy services: Pharmacy First consultations, blood pressure check services, and contraception services. @fig-pf-service-count shows the number of pharmacy consultations recorded in GP records over time, across a range of pharmacy-delivered services. 
+
+Recorded activity increased across all services during the study period. The scale and timing of these increases varied between services, reflecting differences in service implementation, uptake, and recording practices.
+
+```{r}
+#| fig-cap: "The number of clinical events with relevant pharmacy-delivered service codes (SNOMED CT codes), post-implementation of Pharmacy First on 31 Jan 2024."
+#| label: fig-pf-service-count
+#| fig-width: 10
+
+# Read the CSV file
+plot_code_counts <- df_codes_count_measures %>%
+  group_by(measure, interval_end) %>%
+  mutate(
+    numerator_total = sum(numerator, na.rm = TRUE),
+    denominator_total = sum(denominator, na.rm = TRUE),
+    measure = factor(
+      measure,
+      levels = pharmacy_consultation_label,
+      labels = pharmacy_consultation_label_desc
+    ),
+  ) %>%
+  select(measure, interval_end, numerator_total, denominator_total) %>%
+  filter(measure %in% pharmacy_consultation_label_desc) %>%
+  filter(interval_end >= "2024-01-31") %>%
+  distinct() %>%
+  ggplot(aes(
+    x = interval_end,
+    y = numerator_total,
+    colour = measure,
+    shape = measure,
+  )) +
+  geom_point(size = 2) +
+  geom_line(alpha = .3) +
+  labs(
+    title = NULL,
+    x = NULL,
+    y = "Total count",
+    colour = NULL,
+    shape = NULL
+  ) +
+  geom_vline(
+    xintercept = as.Date("2025-10-01"),
+    linetype = "dashed",
+    colour = "orange"
+  ) +
+  scale_y_continuous(
+    labels = scales::label_number(),
+  ) +
+  theme(legend.position = "bottom") +
+  guides(
+    colour = guide_legend(ncol = 2),
+    shape = guide_legend(ncol = 2)
+  ) +
+  scale_x_date(
+    date_breaks = "1 month",
+    labels = scales::label_date_short(),
+    expand = expansion(add = 14)
+  ) +
+  scale_colour_viridis_d(end = .75)
+
+ggsave(
+  here("reports", "resources", "plot_code_counts.png"),
+  plot_code_counts,
+  height = 6,
+  width = 8
+)
+
+plot_code_counts
+```
+
+Pharmacy First consultations accounted for the largest proportion of recorded pharmacy activity. Two codes contributed to the recording of Pharmacy First consultations. The code “Community Pharmacist (CP) Consultation Service for minor illness (procedure) (1577041000000109)” which is used within GP Connect recording pathways, increased substantially over time. 
+
+In contrast, the code “Pharmacy First service (qualifier value) (983341000000102)” is not an official Pharmacy First code and is not specified in Pharmacy First documentation \[ref\]. However, it appears to be a commonly used code when Pharmacy First consultations are recorded manually in GP systems, particularly where structured data transfer is not in place. Use of this code was greatest early in the study period and declined over time. This pattern is consistent with increasing adoption of structured data-sharing mechanisms and growing recording of pharmacy-generated consultations within GP records.
+
+Blood pressure check and contraception services were also identifiable within GP records. Although recorded at lower volumes than Pharmacy First consultations, activity for both services increased over time, demonstrating that a range of pharmacy-delivered services can be observed within GP EHR data. 
+
+Notably, a marked increase in recorded activity was observed across all pharmacy services following October 2025. This coincided with contractual requirements relating to the implementation of GP Connect: Update Record functionality, and may reflect improved transmission of pharmacy consultation records in GP systems. The absence of a similar increase in the non-standard Pharmacy First qualifier code further supports the possibility that structured recording pathways contributed to the observed changes. 
+
+# Comparison with national-level published data
+
+To contextualise pharmacy service recording within GP EHRs, consultation counts identified in OpenSAFELY-TPP were compared with national reimbursement statistics published by the NHS Business Service Authority (NHS BSA). @fig-os-bsa-comparison shows the proportion of nationally reported activity captured within OpenSAFELY-TPP over time for Pharmacy First, blood pressure check, and contraception services. 
+
+These comparisons should be interpreted in the context of differences in population coverage between the two data sources. OpenSAFELY-TPP includes data from approximately 40% of GP practices in England, whereas NHS BSA statistics represent national reimbursement activity. As a result, complete concordance between the two sources would not be expected. Instead, these analyses provide an indication of the extent to which nationally delivered pharmacy activity is visible within GP records available through OpenSAFELY-TPP. 
+
+During early 2024, consultation activity identified within OpenSAFELY-TPP represented a relatively small proportion of nationally reported activity across all services. Coverage increased gradually throughout 2024 and early 2025, before rising substantially from October 2025 onwards. This increase was observed across all services and coincided with wider implementation of structured data-sharing pathways between community pharmacies and GP systems. One possible explanation is improved transmission of pharmacy consultation records into GP EHRs following contractual requirements relating to GP Connect: Update Record implementation. 
+
+The extent of activity visible within GP records differed between services. By February 2026, consultations recorded within OpenSAFELY-TPP represented approximately 62% of nationally reported contraception service activity, 49% of Pharmacy First activity, and 37% of blood pressure check activity. Given that OpenSAFELY-TPP covers approximately 40% of GP practices in England, these findings suggest that visibility of pharmacy consultation activity within GP records improved substantially over the study period. For Pharmacy First and contraception services, the proportion of nationally reported activity observed within OpenSAFELY-TPP approached or exceeded the proportion expected based on GP practice coverage alone. 
+
+
+```{r}
+df_bsa_validation <- df_bsa_validation %>%
+  mutate(
+    count_desc = case_when(
+      count_group ==
+        "Blood Pressure Check Service" ~ "Blood Pressure Check Service",
+      count_group ==
+        "Contraception Service (Ongoing)" ~ "Contraception Service",
+      count_group ==
+        "Contraception Service (Initiation)" ~ "Contraception Service",
+      count_group ==
+        "Contraception Service (Emergency)" ~ "Contraception Service",
+      count_desc == "consultation_type" ~ "Pharmacy First Service",
+      TRUE ~ count_desc
+    )
+  ) %>%
+  filter(count_method == "count_100pct")
+
+View(df_bsa_validation)
+df_bsa_validation_grouped <- df_bsa_validation %>%
+  group_by(count_desc, year_month) %>%
+  summarise(
+    bsa_count = sum(count, na.rm = TRUE)
+  )
+View(df_bsa_validation_grouped)
+View(df_bsa_validation_grouped)
+df_codes_count_measures <- df_codes_count_measures %>%
+  filter(measure != "count_pharmacy_first_service")
+
+df_os_validation <- df_codes_count_measures %>%
+  mutate(
+    measure = case_when(
+      measure ==
+        "count_blood_pressure_service" ~ "Blood Pressure Check Service",
+      measure == "count_contraception_service" ~ "Contraception Service",
+      measure == "count_consultation_service" ~ "Pharmacy First Service",
+      TRUE ~ measure
+    )
+  ) %>%
+  rename(year_month = interval_start, count_desc = measure) %>%
+  group_by(count_desc, year_month) %>%
+  summarise(
+    os_count = sum(numerator, na.rm = TRUE)
+  )
+
+os_bsa_comparison <- left_join(
+  df_os_validation,
+  df_bsa_validation_grouped,
+  join_by(count_desc, year_month),
+  keep = FALSE
+)
+os_bsa_comparison <- os_bsa_comparison %>%
+  filter(year_month > "2024-01-01") %>%
+  mutate(ratio = os_count / bsa_count)
+View(os_bsa_comparison)
+```
+
+```{r}
+#| fig-cap: "OpenSAFELY coverage relative to NHS BSA activity. Coverage is defined as the proportion of NHS BSA-recorded activity that is also recorded in OpenSAFELY. Orange dashed line indicates 40% coverage threshold."
+#| label: fig-os-bsa-comparison
+#| fig-width: 10
+
+pf_comparison <- os_bsa_comparison %>%
+  filter(count_desc == "Pharmacy First Service")
+# Select colours for groups
+# Group 1: #CF4446FF
+colour_group_1 <- paletteer_c("viridis::inferno", n = 10)[6]
+# Group 1: #1B0C42FF
+colour_group_2 <- paletteer_c("viridis::inferno", n = 10)[2]
+
+# Create consultation validation plot
+pf_validation_consultation_plot <- os_bsa_comparison %>%
+  ggplot(aes(
+    x = year_month,
+    y = ratio,
+    colour = count_desc,
+    shape = count_desc,
+  )) +
+  geom_point(size = 2) +
+  geom_line(alpha = .3) +
+  labs(
+    title = NULL,
+    x = NULL,
+    y = "Coverage",
+    colour = NULL,
+    shape = NULL
+  ) +
+  geom_hline(yintercept = 0.4, linetype = "dashed", colour = "orange") +
+  scale_y_continuous(
+    labels = scales::label_percent(),
+  ) +
+  theme(legend.position = "bottom") +
+  guides(
+    colour = guide_legend(ncol = 2),
+    shape = guide_legend(ncol = 2)
+  ) +
+  scale_x_date(
+    date_breaks = "1 month",
+    labels = scales::label_date_short(),
+    expand = expansion(add = 14)
+  ) +
+  scale_colour_viridis_d(end = .75)
+
+pf_validation_consultation_plot
+
+ggsave(
+  here("reports", "resources", "validation_plot.png"),
+  pf_validation_consultation_plot,
+  height = 6,
+  width = 8
+)
+```
+
+# Medications associated with pharmacy services in GP records
+
+Consultation records provide one mechanism for identifying activity delivered outside general practice within GP electronic health records. However, medications supplied through these consultations may also be recorded within GP systems. To assess whether medication records can be used to identify pharmacy-supplied medicines, we examined medication status values among all medications and among medications associated with Pharmacy First consultations.
+
+@tbl-med-status-counts shows the distribution of medication status values across all medications recorded in GP electronic health records between 1 August 2023 and 31 March 2026. Most medications were recorded with a status of "Normal" (86.3%) or "Repeat dispensed" (13.4%), reflecting routine GP prescribing workflows. Other status values, including "Historical" and "Hospital", accounted for a small proportion of medication records. Notably, medications recorded with a status indicating supply under a Patient Group Direction (PGD) were rare, despite PGDs being one mechanism through which medications may be supplied in community pharmacy services.
+
+```{r}
+#| label: tbl-med-status-counts
+#| tbl-cap: "Medication status in GP records."
+
+df_tab_med_status_counts <- df_med_status_counts %>%
+  replace_na(list(n = 0)) %>%
+  filter(selected_codes == "anymed") %>%
+  group_by(med_status) %>%
+  mutate(
+    n = sum(n, na.rm = TRUE),
+    med_status = factor(
+      med_status,
+      levels = med_status_label,
+      labels = med_status_label_desc
+    )
+  ) %>%
+  select(-time, -selected_codes) %>%
+  distinct() %>%
+  ungroup() %>%
+  mutate(pct = n / sum(n))
+
+tab_med_status_counts <- df_tab_med_status_counts %>%
+  gt() %>%
+  sub_missing(
+    columns = everything(),
+    rows = everything(),
+    missing_text = "---"
+  ) %>%
+  fmt_number(
+    columns = n,
+    decimals = 0
+  ) %>%
+  fmt_percent(
+    columns = pct,
+    decimals = 3
+  ) %>%
+  cols_label(
+    med_status = "Medication status",
+    n = "Count",
+    pct = "Percent"
+  ) %>%
+  cols_align(
+    align = "left",
+    columns = med_status
+  ) %>%
+  tab_header(
+    title = md("**Descriptive statistics for medication status**"),
+    subtitle = "This includes all medications issued between 1st Aug 2023 and 31st Mar 2026",
+  )
+
+gtsave(
+  tab_med_status_counts,
+  here("reports", "resources", "tab_med_status_counts.png"),
+)
+
+tab_med_status_counts
+```
+
+To investigate how medications associated with externally delivered care are represented within GP records, medication status values were examined among medications linked to Pharmacy First consultations. Two approaches were used to identify Pharmacy First medications: direct linkage using a Pharmacy First consultation identifier (PF ID), and temporal linkage based on medications recorded on the same day as a Pharmacy First consultation. 
+
+@tbl-med-status-all-med-pf-med demonstrates marked differences in medication status between routine GP prescribing and medications associated with Pharmacy First consultations. Whereas the vast majority of all medications were recorded with a status of "Normal", medications linked directly to a Pharmacy First consultation using PF ID were almost exclusively recorded as "Historical". Of the 467,240 medications linked by PF ID, 465,810 (99.7%) were recorded as historical, while only 1,430 (0.3%) were recorded as normal prescriptions. 
+
+Medications recorded on the same day as a Pharmacy First consultation showed an intermediate pattern. Approximately two thirds of same-day medications (490,820; 66%) were recorded as historical, while approximately one-third (229,950; 31%) were recorded as normal prescriptions. This suggests that temporal linkage identifies a broader range of potential pharmacy-supplied medications than consultation identifiers alone, but also captures routine GP prescribing occurring on the same day as a pharmacy consultation.
+
+These findings demonstrate that medications associated with Pharmacy First consultations are recorded differently from routine GP prescribing, with confirmed Pharmacy First medications overwhelmingly entered as historical medication records. However, this pattern does not mean that medication status can be used to reliably identify medicines supplied outside general practice. Although "Historical" status was strongly associated with confirmed Pharmacy First medications, this status is also used in other clinical contexts and therefore lacks specificity as a marker of external medication supply. Similarly, while temporal linkage identified a broader group of potential pharmacy-supplied medications, it also captured routine GP prescribing occurring on the same day as a pharmacy consultation. Notably, medication status indicating supply under a PGD was almost never recorded, despite PGDs underpinning the supply of many medications through Pharmacy First. This suggests that medication status does not reliably reflect the mechanism by which medicines are supplied or their origin outside general practice. Overall, consultation records remain the most reliable method of identifying externally delivered care within GP EHRs, while medication status alone should be interpreted with caution when determining whether medicines originate outside or inside general practice. 
+
+
+```{r}
+#| label: tbl-med-status-all-med-pf-med
+#| tbl-cap: "Medication recording before and after Pharmacy First launch"
+
+df_tab_pf_med_status_counts <- df_med_status_counts %>%
+  replace_na(list(n = 0)) %>%
+  pivot_wider(names_from = c(time, selected_codes), values_from = n) %>%
+  mutate(
+    med_status = factor(
+      med_status,
+      levels = med_status_label,
+      labels = med_status_label_desc
+    )
+  ) %>%
+  select(
+    med_status,
+    post_anymed,
+    post_anypfid,
+    post_anypfdate
+  )
+
+# Display data frame as table
+tab_pf_med_status_counts <- df_tab_pf_med_status_counts %>%
+  filter(
+    med_status %in%
+      c(
+        "0 - Normal",
+        "4 - Historical",
+        "8 - Repeat dispensed",
+        "11 - Hospital",
+        "13 - From patient group direction"
+      )
+  ) %>%
+  gt() %>%
+  sub_missing(
+    columns = everything(),
+    rows = everything(),
+    missing_text = "---"
+  ) %>%
+  fmt_number(
+    columns = c(
+      post_anymed,
+      post_anypfid,
+      post_anypfdate
+    ),
+    decimals = 0
+  ) %>%
+  tab_spanner(
+    label = md("**Any medication**"),
+    columns = contains("any")
+  ) %>%
+  cols_label(
+    med_status = md("**Medication status**"),
+    post_anymed = "All",
+    post_anypfid = "PF ID",
+    post_anypfdate = "Same Day"
+  ) %>%
+  cols_align(
+    align = "left",
+    columns = med_status
+  ) %>%
+  tab_footnote(
+    footnote = "All medications.",
+    locations = cells_column_labels(columns = c(post_anymed))
+  ) %>%
+  tab_footnote(
+    footnote = "Medications with Pharmacy First consultation ID.",
+    locations = cells_column_labels(columns = c(post_anypfid))
+  ) %>%
+  tab_footnote(
+    footnote = "Medications prescribed on the same day of a Pharmacy First consultation.",
+    locations = cells_column_labels(columns = c(post_anypfdate))
+  ) %>%
+  tab_header(
+    title = md("**Breakdown of medication status for Pharmacy First service**"),
+    subtitle = "Timeframe 1st Feb 2024 to 31st March 2026",
+  )
+
+gtsave(
+  tab_pf_med_status_counts,
+  here("reports", "resources", "tab_med_status_counts.png"),
+)
+
+tab_pf_med_status_counts
+```
+
+## Conclusion
+Community pharmacy services provide a useful example of how care delivered outside general practice is represented within GP EHRs. Consultation records for Pharmacy First, blood pressure check, and contraception services were identifiable within GP data, demonstrating that non-GP activity can increasingly be observed using routine primary care records. However, the completeness of recording varied by service and changed substantially over time, reflecting the continued implementation and maturation of structured data-sharing pathways. 
+
+Comparison with national NHS BSA activity showed that the proportion of pharmacy consultations visible within GP records increased during the study period, particularly following wider implementation of GP Connect: Update Record. 
+
+Medication records provided limited additional information for identifying medicines supplied through pharmacy services. Although medications linked to Pharmacy First consultations were predominantly recorded as historical medications, medication status alone could not reliably distinguish medicines originating outside general practice from routine GP prescribing. Similarly, medication status indicating supply under a PGD was rarely recorded despite its relevance to Pharmacy First medication supply. Consultation records therefore remain the most reliable method for identifying pharmacy-delivered care within GP EHRs.
+
+Overall, these findings demonstrate both the opportunities and limitations of using GP EHR data to study care delivered outside general practice. As structured data-sharing mechanisms continue to develop, the visibility of externally delivered care within GP records is likely to improve, enhancing the ability of researchers to identify and interpret non-GP activity using routine primary care data.
+
+## Appendix
+
+```{r}
+#| fig-cap: "Regional variation in rates of pharmacy consultation activity recorded in GP records, by SNOMED CT code. "
+#| label: fig-pf-service-rates
+#| fig-height: 10
+#| fig-width: 8
+
+# Process data frame
+plot_code_counts_region <- df_codes_count_measures %>%
+  replace_na(list(practice_region = "(Missing)")) %>%
+  mutate(
+    measure = factor(
+      measure,
+      levels = pharmacy_consultation_label,
+      labels = pharmacy_consultation_label_desc
+    ),
+    practice_region = fct_relevel(practice_region, "(Missing)", after = Inf)
+  ) %>%
+  filter(measure %in% pharmacy_consultation_label_desc) %>%
+  filter(interval_end >= "2024-01-31") %>%
+  ggplot(aes(
+    x = interval_end,
+    y = ratio,
+    colour = practice_region,
+  )) +
+  geom_point() +
+  geom_line(alpha = .3) +
+  labs(
+    title = NULL,
+    x = NULL,
+    y = "Ratio of counts",
+    colour = NULL
+  ) +
+  scale_y_continuous(
+    labels = scales::label_percent(),
+  ) +
+  facet_wrap(~measure, scales = "free_y", ncol = 1) +
+  scale_colour_brewer(palette = "Set1", na.value = "#000000") +
+  theme(legend.position = "bottom") +
+  scale_x_date(
+    date_breaks = "1 month",
+    labels = scales::label_date_short(),
+    expand = expansion(add = 14)
+  )
+
+ggsave(
+  here("reports", "resources", "plot_code_counts_region.png"),
+  plot_code_counts_region,
+  height = 12,
+  width = 8
+)
+
+plot_code_counts_region
+```
+
+```{r}
+#| fig-cap: "Medication counts broken down by medication status "
+#| label: fig-pf-med-status-counts
+#| fig-width: 12
+
+# Process data frame
+med_status_counts <- df_med_status_measures %>%
+  group_by(medication_status, interval_end) %>%
+  mutate(
+    numerator_total = sum(numerator, na.rm = TRUE),
+    measure = factor(
+      medication_status,
+      levels = med_status_label2,
+      labels = med_status_label_desc
+    ),
+  ) %>%
+  select(measure, interval_end, numerator_total) %>%
+  filter(measure %in% med_status_label_desc) %>%
+  distinct() %>%
+  ggplot(aes(
+    x = interval_end,
+    y = numerator_total,
+    colour = measure,
+    shape = measure,
+  )) +
+  geom_point(size = 2) +
+  geom_line(alpha = .3) +
+  labs(
+    title = NULL,
+    x = NULL,
+    y = "Total count",
+    colour = NULL,
+    shape = NULL
+  ) +
+  scale_y_continuous(
+    labels = scales::label_number(),
+  ) +
+  theme(legend.position = "bottom") +
+  guides(
+    colour = guide_legend(ncol = 2),
+    shape = guide_legend(ncol = 2)
+  ) +
+  scale_x_date(
+    date_breaks = "1 month",
+    labels = scales::label_date_short(),
+    expand = expansion(add = 14)
+  ) +
+  geom_vline(
+    xintercept = lubridate::as_date(c(
+      "2024-01-31"
+    )),
+    linetype = "dotted",
+    colour = "orange",
+    size = .7
+  ) +
+  scale_colour_viridis_d(end = .75)
+
+ggsave(
+  here("reports", "resources", "med_status_breakdown.png"),
+  med_status_counts,
+  height = 5,
+  width = 8
+)
+
+med_status_counts
+```
