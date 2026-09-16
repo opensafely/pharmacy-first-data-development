@@ -18,6 +18,14 @@ actions:
       highly_sensitive:
         dataset: output/data_development/med_status_data_development.arrow
 
+  generate_med_status_data_development_fixed:
+    run: >
+      ehrql:v1 generate-dataset analysis/dataset_definition_med_status_data_development_fixed.py
+        --output output/data_development/med_status_data_development_fixed.arrow
+    outputs:
+      highly_sensitive:
+        dataset: output/data_development/med_status_data_development_fixed.arrow
+
   generate_measures_pf_codes:
     run: > 
       ehrql:v1 generate-measures analysis/measures_definition_clinical_codes.py
@@ -39,6 +47,13 @@ actions:
      outputs:
        moderately_sensitive:
          dataset: output/data_development/med_status_post_counts.csv
+    
+  data_development_med_status_post_fixed:
+      run: r:v2 analysis/data_development_med_status_post_counts_fixed.R
+      needs: [generate_med_status_data_development_fixed]
+      outputs:
+        moderately_sensitive:
+          dataset: output/data_development/med_status_post_counts_fixed.csv
 
   data_development_med_status_combine:
      run: r:v2 analysis/data_development_med_status_combine.R
