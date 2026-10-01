@@ -5,7 +5,7 @@ from ehrql.tables.raw.tpp import medications
 from codelists import pharmacy_first_event_codes
 measures = create_measures()
 start_date = "2023-08-01"
-monthly_intervals = 32
+monthly_intervals = 31
 
 pharmacy_first_ids = clinical_events.where(clinical_events.snomedct_code.is_in(pharmacy_first_event_codes)).consultation_id
 

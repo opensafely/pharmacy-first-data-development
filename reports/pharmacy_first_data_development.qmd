@@ -171,10 +171,10 @@ Recorded activity increased across all services during the study period. The sca
 #| fig-cap: "The number of clinical events with relevant pharmacy-delivered service codes (SNOMED CT codes), post-implementation of Pharmacy First on 31 Jan 2024."
 #| label: fig-pf-service-count
 #| fig-width: 10
-
+View(df_codes_count_measures)
 # Read the CSV file
 plot_code_counts <- df_codes_count_measures %>%
-  group_by(measure, interval_end) %>%
+  group_by(measure, interval_start) %>%
   mutate(
     numerator_total = sum(numerator, na.rm = TRUE),
     denominator_total = sum(denominator, na.rm = TRUE),
@@ -184,12 +184,12 @@ plot_code_counts <- df_codes_count_measures %>%
       labels = pharmacy_consultation_label_desc
     ),
   ) %>%
-  select(measure, interval_end, numerator_total, denominator_total) %>%
+  select(measure, interval_start, numerator_total, denominator_total) %>%
   filter(measure %in% pharmacy_consultation_label_desc) %>%
-  filter(interval_end >= "2024-01-31") %>%
+  filter(interval_start >= "2024-01-31") %>%
   distinct() %>%
   ggplot(aes(
-    x = interval_end,
+    x = interval_start,
     y = numerator_total,
     colour = measure,
     shape = measure,
@@ -553,9 +553,9 @@ plot_code_counts_region <- df_codes_count_measures %>%
     practice_region = fct_relevel(practice_region, "(Missing)", after = Inf)
   ) %>%
   filter(measure %in% pharmacy_consultation_label_desc) %>%
-  filter(interval_end >= "2024-01-31") %>%
+  filter(interval_start >= "2024-01-31") %>%
   ggplot(aes(
-    x = interval_end,
+    x = interval_start,
     y = ratio,
     colour = practice_region,
   )) +
@@ -596,7 +596,7 @@ plot_code_counts_region
 
 # Process data frame
 med_status_counts <- df_med_status_measures %>%
-  group_by(medication_status, interval_end) %>%
+  group_by(medication_status, interval_start) %>%
   mutate(
     numerator_total = sum(numerator, na.rm = TRUE),
     measure = factor(
@@ -605,11 +605,11 @@ med_status_counts <- df_med_status_measures %>%
       labels = med_status_label_desc
     ),
   ) %>%
-  select(measure, interval_end, numerator_total) %>%
+  select(measure, interval_start, numerator_total) %>%
   filter(measure %in% med_status_label_desc) %>%
   distinct() %>%
   ggplot(aes(
-    x = interval_end,
+    x = interval_start,
     y = numerator_total,
     colour = measure,
     shape = measure,
