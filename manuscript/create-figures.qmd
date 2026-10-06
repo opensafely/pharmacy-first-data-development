@@ -10,6 +10,7 @@ library(gt)
 library(paletteer)
 
 output_dir <- "released_output"
+
 df_med_status_counts <- read_csv(
   here(output_dir, "data_development", "med_status_counts.csv")
 )
