@@ -35,11 +35,6 @@ urinary_tract_infection_tx_cod = codelist_from_csv(
     column="code",
 )
 
-pharmacy_first_clinical_pathways_cod = codelist_from_csv(
-    "codelists/opensafely-pharmacy-first-clinical-pathway-conditions.csv",
-    column="code",
-)
-
 # Combine all medication codelists
 pharmacy_first_med_codes = (
     acute_otitis_media_tx_cod
