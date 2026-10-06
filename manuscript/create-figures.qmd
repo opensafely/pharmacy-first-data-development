@@ -8,8 +8,11 @@ library(tidyverse)
 library(here)
 library(gt)
 library(paletteer)
+library(fs)
 
 output_dir <- "released_output"
+
+dir_create(here(output_dir, "report"))
 
 df_med_status_counts <- read_csv(
   here(output_dir, "data_development", "med_status_counts.csv")
@@ -151,7 +154,7 @@ plot_code_counts <- df_codes_count_measures %>%
   scale_colour_viridis_d(end = .75)
 
 ggsave(
-  here("reports", "resources", "plot_code_counts.png"),
+  here(output_dir, "report", "plot_code_counts.png"),
   plot_code_counts,
   height = 6,
   width = 8
@@ -271,7 +274,7 @@ pf_validation_consultation_plot <- os_bsa_comparison %>%
 pf_validation_consultation_plot
 
 ggsave(
-  here("reports", "resources", "validation_plot.png"),
+  here(output_dir, "report", "validation_plot.png"),
   pf_validation_consultation_plot,
   height = 6,
   width = 8
@@ -332,7 +335,7 @@ tab_med_status_counts <- df_tab_med_status_counts %>%
 
 gtsave(
   tab_med_status_counts,
-  here("reports", "resources", "tab_med_status_counts.png"),
+  here(output_dir, "report", "tab_med_status_counts.png"),
 )
 
 tab_med_status_counts
@@ -418,7 +421,7 @@ tab_pf_med_status_counts <- df_tab_pf_med_status_counts %>%
 
 gtsave(
   tab_pf_med_status_counts,
-  here("reports", "resources", "tab_med_status_counts.png"),
+  here(output_dir, "report", "tab_med_status_counts.png"),
 )
 
 tab_pf_med_status_counts
@@ -471,7 +474,7 @@ plot_code_counts_region <- df_codes_count_measures %>%
   )
 
 ggsave(
-  here("reports", "resources", "plot_code_counts_region.png"),
+  here(output_dir, "report", "plot_code_counts_region.png"),
   plot_code_counts_region,
   height = 12,
   width = 8
@@ -538,7 +541,7 @@ med_status_counts <- df_med_status_measures %>%
   scale_colour_viridis_d(end = .75)
 
 ggsave(
-  here("reports", "resources", "med_status_breakdown.png"),
+  here(output_dir, "report", "med_status_breakdown.png"),
   med_status_counts,
   height = 5,
   width = 8
