@@ -1,0 +1,551 @@
+---
+title: "Create figures for Pharmacy First data development"
+---
+
+```{r}
+# load libraries and csvs
+library(tidyverse)
+library(here)
+library(gt)
+library(paletteer)
+library(fs)
+
+output_dir <- "released_output"
+
+dir_create(here(output_dir, "report"))
+
+df_med_status_counts <- read_csv(
+  here(output_dir, "data_development", "med_status_counts.csv")
+)
+df_codes_count_measures <- read_csv(
+  here(output_dir, "clinical_codes", "code_counts_measures.csv")
+)
+df_med_status_measures <- read_csv(
+  here(output_dir, "measures", "measures_med_status_counts.csv")
+)
+df_bsa_validation <- read_csv(
+  here("lib", "validation", "data", "df_bsa_validation_full.csv")
+)
+```
+
+```{r}
+# Medication status labels and descriptions
+med_status_label <- paste0("status", 0:28)
+med_status_label2 <- as.character(0:28)
+
+med_status_label_desc <- c(
+  "0 - Normal",
+  NA_character_,
+  NA_character_,
+  NA_character_,
+  "4 - Historical",
+  "5 - Blue script",
+  "6 - Private",
+  "7 - Not in possession",
+  "8 - Repeat dispensed",
+  "9 - In possession",
+  "10 - Dental",
+  "11 - Hospital",
+  "12 - Problem substance",
+  "13 - From patient group direction",
+  "14 - To take out",
+  "15 - On admission",
+  "16 - Regular medication",
+  "17 - As required medication",
+  "18 - Variable dose medication",
+  "19 - Rate-controlled single regular",
+  "20 - Only once",
+  "21 - Outpatient",
+  "22 - Rate-controlled multiple regular",
+  "23 - Rate-controlled multiple only once",
+  "24 - Rate-controlled single only once",
+  "25 - Placeholder",
+  "26 - Unconfirmed",
+  "27 - Infusion",
+  "28 - Reducing dose blue script"
+)
+
+# Pharmacy first codes
+pharmacy_consultation_label <- c(
+  "count_blood_pressure_service",
+  "count_contraception_service",
+  "count_consultation_service",
+  "count_pharmacy_first_service"
+)
+
+pharmacy_consultation_label_desc <- c(
+  "Blood Pressure Check Service (1659111000000107)",
+  "Contraception Service (1659121000000101)",
+  "Consultation Service for minor illness (1577041000000109)",
+  "Pharmacy First service (983341000000102)"
+)
+
+summary_stat_label <- c(
+  "count_distinct_ids",
+  "count_pf_events",
+  "count_pf_pathways"
+)
+
+summary_stat_label_desc <- c(
+  "Count of all events",
+  "Count of PF events",
+  "Count of all PF pathways"
+)
+```
+
+# Pharmacy consultation activity in GP records
+
+```{r}
+#| fig-cap: "The number of clinical events with relevant pharmacy-delivered service codes (SNOMED CT codes), post-implementation of Pharmacy First on 31 Jan 2024."
+#| label: fig-pf-service-count
+#| fig-width: 10
+
+# View(df_codes_count_measures)
+
+# Read the CSV file
+plot_code_counts <- df_codes_count_measures %>%
+  group_by(measure, interval_start) %>%
+  mutate(
+    numerator_total = sum(numerator, na.rm = TRUE),
+    denominator_total = sum(denominator, na.rm = TRUE),
+    measure = factor(
+      measure,
+      levels = pharmacy_consultation_label,
+      labels = pharmacy_consultation_label_desc
+    ),
+  ) %>%
+  select(measure, interval_start, numerator_total, denominator_total) %>%
+  filter(measure %in% pharmacy_consultation_label_desc) %>%
+  filter(interval_start >= "2024-01-31") %>%
+  distinct() %>%
+  ggplot(aes(
+    x = interval_start,
+    y = numerator_total,
+    colour = measure,
+    shape = measure,
+  )) +
+  geom_point(size = 2) +
+  geom_line(alpha = .3) +
+  labs(
+    title = NULL,
+    x = NULL,
+    y = "Total count",
+    colour = NULL,
+    shape = NULL
+  ) +
+  geom_vline(
+    xintercept = as.Date("2025-10-01"),
+    linetype = "dashed",
+    colour = "orange"
+  ) +
+  scale_y_continuous(
+    labels = scales::label_number(),
+  ) +
+  theme(legend.position = "bottom") +
+  guides(
+    colour = guide_legend(ncol = 2),
+    shape = guide_legend(ncol = 2)
+  ) +
+  scale_x_date(
+    date_breaks = "1 month",
+    labels = scales::label_date_short(),
+    expand = expansion(add = 14)
+  ) +
+  scale_colour_viridis_d(end = .75)
+
+ggsave(
+  here(output_dir, "report", "plot_code_counts.png"),
+  plot_code_counts,
+  height = 6,
+  width = 8
+)
+
+plot_code_counts
+```
+
+# Comparison with national-level published data
+
+```{r}
+df_bsa_validation <- df_bsa_validation %>%
+  mutate(
+    count_desc = case_when(
+      count_group ==
+        "Blood Pressure Check Service" ~ "Blood Pressure Check Service",
+      count_group ==
+        "Contraception Service (Ongoing)" ~ "Contraception Service",
+      count_group ==
+        "Contraception Service (Initiation)" ~ "Contraception Service",
+      count_group ==
+        "Contraception Service (Emergency)" ~ "Contraception Service",
+      count_desc == "consultation_type" ~ "Pharmacy First Service",
+      TRUE ~ count_desc
+    )
+  ) %>%
+  filter(count_method == "count_100pct")
+
+# View(df_bsa_validation)
+
+df_bsa_validation_grouped <- df_bsa_validation %>%
+  group_by(count_desc, year_month) %>%
+  summarise(
+    bsa_count = sum(count, na.rm = TRUE)
+  )
+# View(df_bsa_validation_grouped)
+# View(df_bsa_validation_grouped)
+
+df_codes_count_measures <- df_codes_count_measures %>%
+  filter(measure != "count_pharmacy_first_service")
+
+df_os_validation <- df_codes_count_measures %>%
+  mutate(
+    measure = case_when(
+      measure ==
+        "count_blood_pressure_service" ~ "Blood Pressure Check Service",
+      measure == "count_contraception_service" ~ "Contraception Service",
+      measure == "count_consultation_service" ~ "Pharmacy First Service",
+      TRUE ~ measure
+    )
+  ) %>%
+  rename(year_month = interval_start, count_desc = measure) %>%
+  group_by(count_desc, year_month) %>%
+  summarise(
+    os_count = sum(numerator, na.rm = TRUE)
+  )
+
+os_bsa_comparison <- left_join(
+  df_os_validation,
+  df_bsa_validation_grouped,
+  join_by(count_desc, year_month),
+  keep = FALSE
+)
+os_bsa_comparison <- os_bsa_comparison %>%
+  filter(year_month > "2024-01-01") %>%
+  mutate(ratio = os_count / bsa_count)
+
+# View(os_bsa_comparison)
+```
+
+```{r}
+#| fig-cap: "OpenSAFELY coverage relative to NHS BSA activity. Coverage is defined as the proportion of NHS BSA-recorded activity that is also recorded in OpenSAFELY. Orange dashed line indicates 40% coverage threshold."
+#| label: fig-os-bsa-comparison
+#| fig-width: 10
+
+pf_comparison <- os_bsa_comparison %>%
+  filter(count_desc == "Pharmacy First Service")
+# Select colours for groups
+# Group 1: #CF4446FF
+colour_group_1 <- paletteer_c("viridis::inferno", n = 10)[6]
+# Group 1: #1B0C42FF
+colour_group_2 <- paletteer_c("viridis::inferno", n = 10)[2]
+
+# Create consultation validation plot
+pf_validation_consultation_plot <- os_bsa_comparison %>%
+  ggplot(aes(
+    x = year_month,
+    y = ratio,
+    colour = count_desc,
+    shape = count_desc,
+  )) +
+  geom_point(size = 2) +
+  geom_line(alpha = .3) +
+  labs(
+    title = NULL,
+    x = NULL,
+    y = "Coverage",
+    colour = NULL,
+    shape = NULL
+  ) +
+  geom_hline(yintercept = 0.4, linetype = "dashed", colour = "orange") +
+  scale_y_continuous(
+    labels = scales::label_percent(),
+  ) +
+  theme(legend.position = "bottom") +
+  guides(
+    colour = guide_legend(ncol = 2),
+    shape = guide_legend(ncol = 2)
+  ) +
+  scale_x_date(
+    date_breaks = "1 month",
+    labels = scales::label_date_short(),
+    expand = expansion(add = 14)
+  ) +
+  scale_colour_viridis_d(end = .75)
+
+pf_validation_consultation_plot
+
+ggsave(
+  here(output_dir, "report", "validation_plot.png"),
+  pf_validation_consultation_plot,
+  height = 6,
+  width = 8
+)
+```
+
+# Medications associated with pharmacy services in GP records
+
+```{r}
+#| label: tbl-med-status-counts
+#| tbl-cap: "Medication status in GP records."
+
+df_tab_med_status_counts <- df_med_status_counts %>%
+  replace_na(list(n = 0)) %>%
+  filter(selected_codes == "anymed") %>%
+  group_by(med_status) %>%
+  mutate(
+    n = sum(n, na.rm = TRUE),
+    med_status = factor(
+      med_status,
+      levels = med_status_label,
+      labels = med_status_label_desc
+    )
+  ) %>%
+  select(-time, -selected_codes) %>%
+  distinct() %>%
+  ungroup() %>%
+  mutate(pct = n / sum(n))
+
+tab_med_status_counts <- df_tab_med_status_counts %>%
+  gt() %>%
+  sub_missing(
+    columns = everything(),
+    rows = everything(),
+    missing_text = "---"
+  ) %>%
+  fmt_number(
+    columns = n,
+    decimals = 0
+  ) %>%
+  fmt_percent(
+    columns = pct,
+    decimals = 3
+  ) %>%
+  cols_label(
+    med_status = "Medication status",
+    n = "Count",
+    pct = "Percent"
+  ) %>%
+  cols_align(
+    align = "left",
+    columns = med_status
+  ) %>%
+  tab_header(
+    title = md("**Descriptive statistics for medication status**"),
+    subtitle = "This includes all medications issued between 1st Aug 2023 and 31st Mar 2026",
+  )
+
+gtsave(
+  tab_med_status_counts,
+  here(output_dir, "report", "tab_med_status_counts.png"),
+)
+
+tab_med_status_counts
+```
+
+```{r}
+#| label: tbl-med-status-all-med-pf-med
+#| tbl-cap: "Medication recording before and after Pharmacy First launch"
+
+df_tab_pf_med_status_counts <- df_med_status_counts %>%
+  replace_na(list(n = 0)) %>%
+  pivot_wider(names_from = c(time, selected_codes), values_from = n) %>%
+  mutate(
+    med_status = factor(
+      med_status,
+      levels = med_status_label,
+      labels = med_status_label_desc
+    )
+  ) %>%
+  select(
+    med_status,
+    post_anymed,
+    post_anypfid,
+    post_anypfdate
+  )
+
+# Display data frame as table
+tab_pf_med_status_counts <- df_tab_pf_med_status_counts %>%
+  filter(
+    med_status %in%
+      c(
+        "0 - Normal",
+        "4 - Historical",
+        "8 - Repeat dispensed",
+        "11 - Hospital",
+        "13 - From patient group direction"
+      )
+  ) %>%
+  gt() %>%
+  sub_missing(
+    columns = everything(),
+    rows = everything(),
+    missing_text = "---"
+  ) %>%
+  fmt_number(
+    columns = c(
+      post_anymed,
+      post_anypfid,
+      post_anypfdate
+    ),
+    decimals = 0
+  ) %>%
+  tab_spanner(
+    label = md("**Any medication**"),
+    columns = contains("any")
+  ) %>%
+  cols_label(
+    med_status = md("**Medication status**"),
+    post_anymed = "All",
+    post_anypfid = "PF ID",
+    post_anypfdate = "Same Day"
+  ) %>%
+  cols_align(
+    align = "left",
+    columns = med_status
+  ) %>%
+  tab_footnote(
+    footnote = "All medications.",
+    locations = cells_column_labels(columns = c(post_anymed))
+  ) %>%
+  tab_footnote(
+    footnote = "Medications with Pharmacy First consultation ID.",
+    locations = cells_column_labels(columns = c(post_anypfid))
+  ) %>%
+  tab_footnote(
+    footnote = "Medications prescribed on the same day of a Pharmacy First consultation.",
+    locations = cells_column_labels(columns = c(post_anypfdate))
+  ) %>%
+  tab_header(
+    title = md("**Breakdown of medication status for Pharmacy First service**"),
+    subtitle = "Timeframe 1st Feb 2024 to 31st March 2026",
+  )
+
+gtsave(
+  tab_pf_med_status_counts,
+  here(output_dir, "report", "tab_med_status_counts.png"),
+)
+
+tab_pf_med_status_counts
+```
+
+## Appendix
+
+```{r}
+#| fig-cap: "Regional variation in rates of pharmacy consultation activity recorded in GP records, by SNOMED CT code. "
+#| label: fig-pf-service-rates
+#| fig-height: 10
+#| fig-width: 8
+
+# Process data frame
+plot_code_counts_region <- df_codes_count_measures %>%
+  replace_na(list(practice_region = "(Missing)")) %>%
+  mutate(
+    measure = factor(
+      measure,
+      levels = pharmacy_consultation_label,
+      labels = pharmacy_consultation_label_desc
+    ),
+    practice_region = fct_relevel(practice_region, "(Missing)", after = Inf)
+  ) %>%
+  filter(measure %in% pharmacy_consultation_label_desc) %>%
+  filter(interval_start >= "2024-01-31") %>%
+  ggplot(aes(
+    x = interval_start,
+    y = ratio,
+    colour = practice_region,
+  )) +
+  geom_point() +
+  geom_line(alpha = .3) +
+  labs(
+    title = NULL,
+    x = NULL,
+    y = "Ratio of counts",
+    colour = NULL
+  ) +
+  scale_y_continuous(
+    labels = scales::label_percent(),
+  ) +
+  facet_wrap(~measure, scales = "free_y", ncol = 1) +
+  scale_colour_brewer(palette = "Set1", na.value = "#000000") +
+  theme(legend.position = "bottom") +
+  scale_x_date(
+    date_breaks = "1 month",
+    labels = scales::label_date_short(),
+    expand = expansion(add = 14)
+  )
+
+ggsave(
+  here(output_dir, "report", "plot_code_counts_region.png"),
+  plot_code_counts_region,
+  height = 12,
+  width = 8
+)
+
+plot_code_counts_region
+```
+
+```{r}
+#| fig-cap: "Medication counts broken down by medication status "
+#| label: fig-pf-med-status-counts
+#| fig-width: 12
+
+# Process data frame
+med_status_counts <- df_med_status_measures %>%
+  group_by(medication_status, interval_start) %>%
+  mutate(
+    numerator_total = sum(numerator, na.rm = TRUE),
+    measure = factor(
+      medication_status,
+      levels = med_status_label2,
+      labels = med_status_label_desc
+    ),
+  ) %>%
+  select(measure, interval_start, numerator_total) %>%
+  filter(measure %in% med_status_label_desc) %>%
+  distinct() %>%
+  ggplot(aes(
+    x = interval_start,
+    y = numerator_total,
+    colour = measure,
+    shape = measure,
+  )) +
+  geom_point(size = 2) +
+  geom_line(alpha = .3) +
+  labs(
+    title = NULL,
+    x = NULL,
+    y = "Total count",
+    colour = NULL,
+    shape = NULL
+  ) +
+  scale_y_continuous(
+    labels = scales::label_number(),
+  ) +
+  theme(legend.position = "bottom") +
+  guides(
+    colour = guide_legend(ncol = 2),
+    shape = guide_legend(ncol = 2)
+  ) +
+  scale_x_date(
+    date_breaks = "1 month",
+    labels = scales::label_date_short(),
+    expand = expansion(add = 14)
+  ) +
+  geom_vline(
+    xintercept = lubridate::as_date(c(
+      "2024-01-31"
+    )),
+    linetype = "dotted",
+    colour = "orange",
+    size = .7
+  ) +
+  scale_colour_viridis_d(end = .75)
+
+ggsave(
+  here(output_dir, "report", "med_status_breakdown.png"),
+  med_status_counts,
+  height = 5,
+  width = 8
+)
+
+med_status_counts
+```
