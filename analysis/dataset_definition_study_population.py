@@ -14,13 +14,6 @@ index_dates = {
 dataset = create_dataset()
 dataset.configure_dummy_data(population_size=1000)
 
-has_pharmacy_first_consultation = (
-    clinical_events.where(
-        clinical_events.snomedct_code.is_in(pharmacy_first_event_codes)
-    )
-    .where(clinical_events.date.is_on_or_between(study_start, study_end))
-    .exists_for_patient()
-)
 
 # Practice is NULL when the patient is not registered on that date.
 for time_point, date in index_dates.items():
