@@ -20,4 +20,5 @@ for time_point, date in index_dates.items():
     practice_id = practice_registrations.for_patient_on(date).practice_pseudo_id
     dataset.add_column(f"practice_{time_point}", practice_id)
 
-dataset.define_population(has_pharmacy_first_consultation)
+is_registered = practice_registrations.for_patient_on(study_end).exists_for_patient()
+dataset.define_population(is_registered)
