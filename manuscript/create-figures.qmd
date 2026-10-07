@@ -17,14 +17,17 @@ dir_create(here(output_dir, "report"))
 df_med_status_counts <- read_csv(
   here(output_dir, "data_development", "med_status_counts.csv")
 )
+df_med_status_counts_fixed <- read_csv(
+  here(output_dir, "data_development", "med_status_post_counts_fixed.csv")
+)
 df_codes_count_measures <- read_csv(
   here(output_dir, "clinical_codes", "code_counts_measures.csv")
 )
 df_med_status_measures <- read_csv(
   here(output_dir, "measures", "measures_med_status_counts.csv")
 )
-df_bsa_validation <- read_csv(
-  here("lib", "validation", "data", "df_bsa_validation_full.csv")
+df_bsa_validation_grouped <- read_csv(
+  here("lib", "validation", "data", "pf_consultation_validation_data_full_grouped.csv")
 )
 ```
 
@@ -166,35 +169,27 @@ plot_code_counts
 # Comparison with national-level published data
 
 ```{r}
-df_bsa_validation <- df_bsa_validation %>%
+df_bsa_validation <- df_bsa_validation_grouped %>%
+  filter(year_month >= "2024-02-01") %>%
   mutate(
-    count_desc = case_when(
-      count_group ==
-        "Blood Pressure Check Service" ~ "Blood Pressure Check Service",
-      count_group ==
-        "Contraception Service (Ongoing)" ~ "Contraception Service",
-      count_group ==
-        "Contraception Service (Initiation)" ~ "Contraception Service",
-      count_group ==
-        "Contraception Service (Emergency)" ~ "Contraception Service",
-      count_desc == "consultation_type" ~ "Pharmacy First Service",
-      TRUE ~ count_desc
+    consultation_type = case_when(
+      consultation_type ==
+        "community_pharmacy_clinic_blood_pressure_checks" ~ "Blood Pressure Check Service",
+      consultation_type ==
+        "contraception_service" ~ "Contraception Service",
+      consultation_type %in% c(
+        "pharmacy_first_seven_pathways",
+        "pharmacy_first_minor_illness_referral_consultations"
+      ) ~ "Pharmacy First Service",
+      TRUE ~ consultation_type
     )
   ) %>%
-  filter(count_method == "count_100pct")
-
-# View(df_bsa_validation)
-
-df_bsa_validation_grouped <- df_bsa_validation %>%
-  group_by(count_desc, year_month) %>%
+  ungroup() %>%
+  group_by(consultation_type, year_month) %>%
   summarise(
-    bsa_count = sum(count, na.rm = TRUE)
+    bsa_count = sum(count, na.rm = TRUE),
+    .groups = "drop"
   )
-# View(df_bsa_validation_grouped)
-# View(df_bsa_validation_grouped)
-
-df_codes_count_measures <- df_codes_count_measures %>%
-  filter(measure != "count_pharmacy_first_service")
 
 df_os_validation <- df_codes_count_measures %>%
   mutate(
@@ -203,26 +198,30 @@ df_os_validation <- df_codes_count_measures %>%
         "count_blood_pressure_service" ~ "Blood Pressure Check Service",
       measure == "count_contraception_service" ~ "Contraception Service",
       measure == "count_consultation_service" ~ "Pharmacy First Service",
+      measure == "count_pharmacy_first_service" ~ "Pharmacy First Service",
       TRUE ~ measure
     )
   ) %>%
-  rename(year_month = interval_start, count_desc = measure) %>%
-  group_by(count_desc, year_month) %>%
+  rename(year_month = interval_start, consultation_type = measure) %>%
+  group_by(consultation_type, year_month) %>%
   summarise(
     os_count = sum(numerator, na.rm = TRUE)
   )
 
 os_bsa_comparison <- left_join(
   df_os_validation,
-  df_bsa_validation_grouped,
-  join_by(count_desc, year_month),
+  df_bsa_validation,
+  join_by(consultation_type, year_month),
   keep = FALSE
 )
 os_bsa_comparison <- os_bsa_comparison %>%
   filter(year_month > "2024-01-01") %>%
   mutate(ratio = os_count / bsa_count)
 
-# View(os_bsa_comparison)
+analysis2 <- os_bsa_comparison %>%
+  filter(year_month >= "2025-10-01") %>%
+  group_by(consultation_type) %>% 
+  summarise(sum = sum(os_count))
 ```
 
 ```{r}
@@ -231,20 +230,20 @@ os_bsa_comparison <- os_bsa_comparison %>%
 #| fig-width: 10
 
 pf_comparison <- os_bsa_comparison %>%
-  filter(count_desc == "Pharmacy First Service")
+  filter(consultation_type == "Pharmacy First Service")
 # Select colours for groups
 # Group 1: #CF4446FF
 colour_group_1 <- paletteer_c("viridis::inferno", n = 10)[6]
 # Group 1: #1B0C42FF
 colour_group_2 <- paletteer_c("viridis::inferno", n = 10)[2]
-
+View(os_bsa_comparison)
 # Create consultation validation plot
 pf_validation_consultation_plot <- os_bsa_comparison %>%
   ggplot(aes(
     x = year_month,
     y = ratio,
-    colour = count_desc,
-    shape = count_desc,
+    colour = consultation_type,
+    shape = consultation_type,
   )) +
   geom_point(size = 2) +
   geom_line(alpha = .3) +
@@ -274,7 +273,7 @@ pf_validation_consultation_plot <- os_bsa_comparison %>%
 pf_validation_consultation_plot
 
 ggsave(
-  here(output_dir, "report", "validation_plot.png"),
+  here("reports", "resources", "validation_plot.png"),
   pf_validation_consultation_plot,
   height = 6,
   width = 8
@@ -330,7 +329,7 @@ tab_med_status_counts <- df_tab_med_status_counts %>%
   ) %>%
   tab_header(
     title = md("**Descriptive statistics for medication status**"),
-    subtitle = "This includes all medications issued between 1st Aug 2023 and 31st Mar 2026",
+    subtitle = "This includes all medications issued between 1st Aug 2023 and 28th Feb 2026",
   )
 
 gtsave(
@@ -421,10 +420,87 @@ tab_pf_med_status_counts <- df_tab_pf_med_status_counts %>%
 
 gtsave(
   tab_pf_med_status_counts,
-  here(output_dir, "report", "tab_med_status_counts.png"),
+  here("reports", "resources", "tab_med_status_counts.png"),
 )
 
 tab_pf_med_status_counts
+View(df_med_status_counts_fixed)
+df_tab_pf_med_status_counts_fixed <- df_med_status_counts_fixed %>%
+  replace_na(list(n = 0)) %>%
+  pivot_wider(names_from = c(time, selected_codes), values_from = n) %>%
+  mutate(
+    med_status = factor(
+      med_status,
+      levels = med_status_label,
+      labels = med_status_label_desc
+    )
+  ) %>%
+  select(
+    med_status,
+    post_anymed,
+    post_anypfid,
+    post_anypfdate,
+    post_pfmed,
+    post_pfmedid,
+    post_pfmedpfdate
+  )
+
+# Display data frame as table
+tab_pf_med_status_counts_fixed <- df_tab_pf_med_status_counts_fixed %>%
+  filter(
+    med_status %in%
+      c(
+        "0 - Normal",
+        "4 - Historical",
+        "8 - Repeat dispensed",
+        "11 - Hospital",
+        "13 - From patient group direction"
+      )
+  ) %>%
+  gt() %>%
+  sub_missing(
+    columns = everything(),
+    rows = everything(),
+    missing_text = "---"
+  ) %>%
+  fmt_number(
+    columns = c(
+      post_anymed,
+      post_anypfid,
+      post_anypfdate
+    ),
+    decimals = 0
+  ) %>%
+  tab_spanner(
+    label = md("**Any medication**"),
+    columns = contains("any")
+  ) %>%
+  cols_label(
+    med_status = md("**Medication status**"),
+    post_anymed = "All",
+    post_anypfid = "PF ID",
+    post_anypfdate = "Same Day"
+  ) %>%
+  cols_align(
+    align = "left",
+    columns = med_status
+  ) %>%
+  tab_footnote(
+    footnote = "All medications.",
+    locations = cells_column_labels(columns = c(post_anymed))
+  ) %>%
+  tab_footnote(
+    footnote = "Medications with Pharmacy First consultation ID.",
+    locations = cells_column_labels(columns = c(post_anypfid))
+  ) %>%
+  tab_footnote(
+    footnote = "Medications prescribed on the same day of a Pharmacy First consultation.",
+    locations = cells_column_labels(columns = c(post_anypfdate))
+  ) %>%
+  tab_header(
+    title = md("**Breakdown of medication status for Pharmacy First service**"),
+    subtitle = "Timeframe 1st Oct 2025 to 31st March 2026",
+  )
 ```
 
 ## Appendix
