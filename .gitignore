@@ -28,3 +28,6 @@ lib/validation/data/epraccur.csv
 lib/validation/data/df_bsa_validation_full.csv
 sketch.R
 counts_by_icb.csv
+lib/validation/data/pf_consultation_validation_data_full_grouped.csv
+manuscript/create-figures.html
+manuscript/create-figures_files/*
