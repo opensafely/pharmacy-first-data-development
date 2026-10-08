@@ -94,6 +94,17 @@ summary_stat_label_desc <- c(
   "Count of PF events",
   "Count of all PF pathways"
 )
+
+theme_pf <- theme(
+    legend.position = "bottom",
+    text = element_text(size = 12),
+    panel.background = element_blank(),
+    axis.line = element_line(colour = "grey50"),
+    panel.grid.major = ggplot2::element_line(
+        colour = "gray90",
+        linetype = "dotted"
+  ))
+
 ```
 
 # Pharmacy consultation activity in GP records
@@ -154,7 +165,8 @@ plot_code_counts <- df_codes_count_measures %>%
     labels = scales::label_date_short(),
     expand = expansion(add = 14)
   ) +
-  scale_colour_viridis_d(end = .75)
+  scale_colour_viridis_d(end = .75) + 
+  theme_pf
 
 ggsave(
   here(output_dir, "report", "plot_code_counts.png"),
@@ -268,7 +280,8 @@ pf_validation_consultation_plot <- os_bsa_comparison %>%
     labels = scales::label_date_short(),
     expand = expansion(add = 14)
   ) +
-  scale_colour_viridis_d(end = .75)
+  scale_colour_viridis_d(end = .75)+ 
+  theme_pf
 
 pf_validation_consultation_plot
 
