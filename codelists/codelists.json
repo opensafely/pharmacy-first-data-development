@@ -1,46 +1,46 @@
 {
   "files": {
-    "opensafely-pharmacy-first-acute-otitis-media-treatment-dmd.csv": {
-      "id": "opensafely/pharmacy-first-acute-otitis-media-treatment-dmd/4122468e",
-      "url": "https://www.opencodelists.org/codelist/opensafely/pharmacy-first-acute-otitis-media-treatment-dmd/4122468e/",
-      "downloaded_at": "2024-08-12 08:25:12.645800Z",
-      "sha": "3fc6c59a594ba29f4fb58ff77c7bfcba2319438b"
+    "opensafely-pharmacy-first-acute-otitis-media-treatment-full-dmd-codelist.csv": {
+      "id": "opensafely/pharmacy-first-acute-otitis-media-treatment-full-dmd-codelist/2c549ca2",
+      "url": "https://www.opencodelists.org/codelist/opensafely/pharmacy-first-acute-otitis-media-treatment-full-dmd-codelist/2c549ca2/",
+      "downloaded_at": "2026-11-06 13:14:58.884577+00:00Z",
+      "sha": "8cf3c1354b50034db77fc8fa6b8ca7fdb2005c42"
     },
-    "opensafely-pharmacy-first-impetigo-treatment-dmd.csv": {
-      "id": "opensafely/pharmacy-first-impetigo-treatment-dmd/708e6d02",
-      "url": "https://www.opencodelists.org/codelist/opensafely/pharmacy-first-impetigo-treatment-dmd/708e6d02/",
-      "downloaded_at": "2024-08-12 08:26:00.291332Z",
-      "sha": "e277cfc38bc70b9b7a4837280d35f820c7228a2a"
+    "opensafely-pharmacy-first-impetigo-treatment-full-dmd-codelist.csv": {
+      "id": "opensafely/pharmacy-first-impetigo-treatment-full-dmd-codelist/2f075c98",
+      "url": "https://www.opencodelists.org/codelist/opensafely/pharmacy-first-impetigo-treatment-full-dmd-codelist/2f075c98/",
+      "downloaded_at": "2026-11-06 13:14:59.006233+00:00Z",
+      "sha": "fedf9507b28c30862f77720b872061028a621602"
     },
-    "opensafely-pharmacy-first-infected-insect-bites-treatment-dmd.csv": {
-      "id": "opensafely/pharmacy-first-infected-insect-bites-treatment-dmd/2812d359",
-      "url": "https://www.opencodelists.org/codelist/opensafely/pharmacy-first-infected-insect-bites-treatment-dmd/2812d359/",
-      "downloaded_at": "2024-08-12 08:26:00.447422Z",
-      "sha": "ee4b7b64befe5d69be6568a771d9d6c96184bc66"
+    "opensafely-pharmacy-first-infected-insect-bites-treatment-full-dmd-codelist.csv": {
+      "id": "opensafely/pharmacy-first-infected-insect-bites-treatment-full-dmd-codelist/1345296d",
+      "url": "https://www.opencodelists.org/codelist/opensafely/pharmacy-first-infected-insect-bites-treatment-full-dmd-codelist/1345296d/",
+      "downloaded_at": "2026-11-06 13:14:59.125022+00:00Z",
+      "sha": "63db78b2141fbc7882971a2374096e31ad5a4b79"
     },
-    "opensafely-pharmacy-first-shingles-treatment-dmd.csv": {
-      "id": "opensafely/pharmacy-first-shingles-treatment-dmd/3bbcc6a2",
-      "url": "https://www.opencodelists.org/codelist/opensafely/pharmacy-first-shingles-treatment-dmd/3bbcc6a2/",
-      "downloaded_at": "2024-08-12 08:26:01.007067Z",
-      "sha": "2a59f3e2f3fd8a7c0b335f31568b90df14872a1c"
+    "opensafely-pharmacy-first-shingles-treatment-full-dmd-codelist.csv": {
+      "id": "opensafely/pharmacy-first-shingles-treatment-full-dmd-codelist/7a35b637",
+      "url": "https://www.opencodelists.org/codelist/opensafely/pharmacy-first-shingles-treatment-full-dmd-codelist/7a35b637/",
+      "downloaded_at": "2026-11-06 13:14:59.246393+00:00Z",
+      "sha": "e6f5086ea47b535fcdb65fe323d107c7329077f1"
     },
-    "opensafely-pharmacy-first-sinusitis-treatment-dmd.csv": {
-      "id": "opensafely/pharmacy-first-sinusitis-treatment-dmd/0f036024",
-      "url": "https://www.opencodelists.org/codelist/opensafely/pharmacy-first-sinusitis-treatment-dmd/0f036024/",
-      "downloaded_at": "2024-08-12 08:26:01.564620Z",
-      "sha": "8b931a9e9df4cf525d469b0ba6b4017704917532"
+    "opensafely-pharmacy-first-sinusitis-treatment-full-dmd-codelist.csv": {
+      "id": "opensafely/pharmacy-first-sinusitis-treatment-full-dmd-codelist/346cdc84",
+      "url": "https://www.opencodelists.org/codelist/opensafely/pharmacy-first-sinusitis-treatment-full-dmd-codelist/346cdc84/",
+      "downloaded_at": "2026-11-06 13:14:59.375491+00:00Z",
+      "sha": "e27e31259f6ddfb826c66e9a1e3099dc1b181d24"
     },
-    "opensafely-pharmacy-first-sore-throat-treatment-dmd.csv": {
-      "id": "opensafely/pharmacy-first-sore-throat-treatment-dmd/2ac5934f",
-      "url": "https://www.opencodelists.org/codelist/opensafely/pharmacy-first-sore-throat-treatment-dmd/2ac5934f/",
-      "downloaded_at": "2024-08-12 08:26:02.177161Z",
-      "sha": "5d940aac27fd0ce6b571a4e2ea669f0dc3a79677"
+    "opensafely-pharmacy-first-sore-throat-treatment-full-dmd-codelist.csv": {
+      "id": "opensafely/pharmacy-first-sore-throat-treatment-full-dmd-codelist/61264302",
+      "url": "https://www.opencodelists.org/codelist/opensafely/pharmacy-first-sore-throat-treatment-full-dmd-codelist/61264302/",
+      "downloaded_at": "2026-11-06 13:14:59.478603+00:00Z",
+      "sha": "3d521d6591ed4e980c94165e229ae25a4ea892f5"
     },
-    "opensafely-pharmacy-first-urinary-tract-infection-treatment-dmd.csv": {
-      "id": "opensafely/pharmacy-first-urinary-tract-infection-treatment-dmd/54cc39d7",
-      "url": "https://www.opencodelists.org/codelist/opensafely/pharmacy-first-urinary-tract-infection-treatment-dmd/54cc39d7/",
-      "downloaded_at": "2024-08-12 08:26:02.392613Z",
-      "sha": "f7f6dcf4d7fc4d9b99d1a8644465f428c751b763"
+    "opensafely-pharmacy-first-urinary-tract-infection-treatment-full-dmd-codelist.csv": {
+      "id": "opensafely/pharmacy-first-urinary-tract-infection-treatment-full-dmd-codelist/4816cfcd",
+      "url": "https://www.opencodelists.org/codelist/opensafely/pharmacy-first-urinary-tract-infection-treatment-full-dmd-codelist/4816cfcd/",
+      "downloaded_at": "2026-11-06 13:14:59.607275+00:00Z",
+      "sha": "74c3e5caa9d33db45e6af0486fa8e03a234daf44"
     }
   }
 }
