@@ -40,13 +40,13 @@ for (selected_variables in seq_along(selected_variables_list)) {
   print("- Pivot data successfully")
 
   dfs_med_status_summary[[selected_variables]] <- dfs_med_status_long_tmp %>%
-    dplyr::group_by(time, selected_codes, med_status) %>%
-    dplyr::mutate(n = sum(value, na.rm = TRUE)) %>%
-    dplyr::ungroup() %>%
-    dplyr::select(time, selected_codes, med_status, n) %>%
-    dplyr::distinct() %>%
-    dplyr::filter(n > 7) %>%
-    dplyr::mutate(n = round(n, -1))
+  dplyr::group_by(time, selected_codes, med_status) %>%
+  dplyr::summarise(
+    n = sum(value, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  dplyr::filter(n > 7) %>%
+  dplyr::mutate(n = round(n, -1))
 
   rm(dfs_med_status_long_tmp)
   gc()
